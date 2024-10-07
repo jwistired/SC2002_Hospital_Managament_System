@@ -1,1 +1,3 @@
 Creating a hospital management system in JAVA CLI.
+
+CREATE NEW BRANCH WHEN WORKING ON THE CODE, MERGE BACK AFTERWARDS.

@@ -1,6 +1,6 @@
 import java.io.Serializable;
 
-abstract class User implements Serializable {
+public abstract class User implements Serializable {
     private static final long serialVersionUID = 1L;
     protected String hospitalId;
     protected String name;

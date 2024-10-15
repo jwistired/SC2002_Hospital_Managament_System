@@ -4,7 +4,7 @@ import java.util.Map;
 
 public class UserManager {
     private Map<String, User> users = new HashMap<>();
-    private static final String USERS_FILE = "users.dat";
+    private static final String USERS_FILE = "Data/users.dat";
 
     public UserManager() {
         loadUsers();

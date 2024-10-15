@@ -1,3 +1,9 @@
 Creating a hospital management system in JAVA CLI.
 
-CREATE NEW BRANCH WHEN WORKING ON THE CODE, MERGE BACK AFTERWARDS.
+
+Test the program by
+cd Code
+javac -d test/ *.java
+cd test
+java HospitalManagementSystem  
+

@@ -1,0 +1,4 @@
+Alice Bob|abob@ntu.edu.sg|67901111
+Bob Charles|bcharles@ntu.edu.sg|67902222
+Charles David|cdavid@ntu.edu.sg|6790333
+Joseph|jos@ntu.edu.sg|67909999

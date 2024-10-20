@@ -6,4 +6,4 @@ cd Code
 javac -d test/ *.java
 cd test
 java HospitalManagementSystem  
-
+Hello

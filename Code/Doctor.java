@@ -22,8 +22,9 @@ public class Doctor extends User {
             System.out.println("4. Set Availability for Appointments");
             System.out.println("5. Accept or Decline Appointment Requests");
             System.out.println("6. View Upcoming Appointments");
-            System.out.println("7. Change Password");
-            System.out.println("8. Logout");
+            System.out.println("7. Record Appointment Outcome");
+            System.out.println("8. Change Password");
+            System.out.println("9. Logout");
             System.out.print("Enter choice: ");
             choice = sc.nextInt();
 
@@ -47,10 +48,13 @@ public class Doctor extends User {
                     viewUpcomingAppointments();
                     break;
                 case 7:
+                    recordAppointmentOutcome();
+                    break;
+                case 8:
                     changePassword(sc, userManager);
                     break;
             }
-        } while (choice != 8);
+        } while (choice != 9);
     }
 
     private void viewPatientMedicalRecords() {
@@ -77,11 +81,8 @@ public class Doctor extends User {
         System.out.println("Viewing upcoming appointments...");
     }
 
-    private void changePassword(Scanner sc, UserManager userManager) {
-        System.out.print("Enter new password: ");
-        String newPassword = sc.next();
-        changePassword(newPassword);
-        userManager.saveUsers(); // Save the new password to the file
-        System.out.println("Password changed successfully.");
+    private void recordAppointmentOutcome() {
+        System.out.println("Viewing upcoming appointments...");
     }
+
 }

@@ -22,9 +22,12 @@ public class Patient extends User {
             System.out.println("2. Update Personal Information");
             System.out.println("3. View Available Appointment Slots");
             System.out.println("4. Schedule an Appointment");
-            System.out.println("5. View Scheduled Appointments");
-            System.out.println("6. Change Password");
-            System.out.println("7. Logout");
+            System.out.println("5. Reschedule an Appointment");
+            System.out.println("6. Cancel an Appointment");
+            System.out.println("7. View Scheduled Appointments");
+            System.out.println("8. View Past Appointment Outcome Records");
+            System.out.println("9. Change Password");
+            System.out.println("10. Logout");
             System.out.print("Enter choice: ");
             choice = sc.nextInt();
 
@@ -42,13 +45,22 @@ public class Patient extends User {
                     scheduleAppointment();
                     break;
                 case 5:
-                    viewScheduledAppointments();
+                    reScheduleAppointment();
                     break;
                 case 6:
+                    cancelAppointment();
+                    break;
+                case 7:
+                    viewScheduledAppointments();
+                    break;
+                case 8:
+                    viewPastAppointmentRecord();
+                    break;
+                case 9:
                     changePassword(sc, userManager);
                     break;
             }
-        } while (choice != 7);
+        } while (choice != 10);
     }
 
     private void viewMedicalRecord() {
@@ -71,16 +83,24 @@ public class Patient extends User {
         System.out.println("Scheduling appointment...");
     }
 
+    private void reScheduleAppointment() {
+        // Logic for scheduling an appointment
+        System.out.println("Scheduling appointment...");
+    }
+
+    private void cancelAppointment() {
+        // Logic for scheduling an appointment
+        System.out.println("Scheduling appointment...");
+    }
+
     private void viewScheduledAppointments() {
         // Logic for viewing scheduled appointments
         System.out.println("Viewing scheduled appointments...");
     }
 
-    private void changePassword(Scanner sc, UserManager userManager) {
-        System.out.print("Enter new password: ");
-        String newPassword = sc.next();
-        changePassword(newPassword);
-        userManager.saveUsers(); // Save the new password to the file
-        System.out.println("Password changed successfully.");
+    private void viewPastAppointmentRecord() {
+        // Logic for viewing scheduled appointments
+        System.out.println("Viewing scheduled appointments...");
     }
+
 }

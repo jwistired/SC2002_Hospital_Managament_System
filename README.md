@@ -1,13 +1,23 @@
-Creating a hospital management system in JAVA CLI.
+```bash
+javac -d bin -sourcepath src src/main/HMSApplication.java
+java -cp bin main.HMSApplication
+```
 
+Testing the Application
 
-Test the program by
+Login Credentials
 
-cd Code
+Upon first run, use the following default login credentials:
 
-javac -d test/ *.java
-
-cd test
-
-java HospitalManagementSystem  
-Hello
+	•	Administrator:
+	•	User ID: admin
+	•	Password: password (you will be prompted to change it upon first login)
+	•	Doctor:
+	•	User ID: doc1
+	•	Password: password (change upon first login)
+	•	Pharmacist:
+	•	User ID: pharm1
+	•	Password: password (change upon first login)
+	•	Patient:
+	•	User ID: patient1
+	•	Password: password (change upon first login)

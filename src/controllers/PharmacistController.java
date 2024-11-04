@@ -3,8 +3,11 @@ package controllers;
 import models.Pharmacist;
 import models.Prescription;
 import models.InventoryItem;
+import models.Appointment;
+import models.AppointmentOutcome;
 import views.PharmacistView;
 import utils.SerializationUtil;
+import utils.Config;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -16,7 +19,7 @@ import java.util.HashMap;
 public class PharmacistController {
     private Pharmacist model;
     private PharmacistView view;
-    private List<Prescription> prescriptions;
+    private List<Appointment> appointments;
     private List<InventoryItem> inventory;
 
     /**
@@ -28,7 +31,7 @@ public class PharmacistController {
     public PharmacistController(Pharmacist model, PharmacistView view) {
         this.model = model;
         this.view = view;
-        loadPrescriptions();
+        loadAppointments();
         loadInventory();
     }
 
@@ -63,10 +66,11 @@ public class PharmacistController {
     }
 
     /**
-     * Displays appointment outcome records.
+     * Displays appointment outcome records, including prescriptions.
      */
     private void viewAppointmentOutcomeRecords() {
-        view.displayPrescriptions(prescriptions);
+        List<Prescription> allPrescriptions = getAllPrescriptions();
+        view.displayPrescriptions(allPrescriptions);
     }
 
     /**
@@ -74,15 +78,28 @@ public class PharmacistController {
      */
     private void updatePrescriptionStatus() {
         String medicationName = view.getMedicationNameInput();
-        for (Prescription presc : prescriptions) {
-            if (presc.getMedicationName().equals(medicationName)) {
-                presc.setStatus("dispensed");
-                savePrescriptions();
-                view.displayMessage("Prescription status updated.");
-                return;
+        boolean found = false;
+
+        for (Appointment appt : appointments) {
+            AppointmentOutcome outcome = appt.getOutcome();
+            if (outcome != null) {
+                List<Prescription> prescriptions = outcome.getPrescriptions();
+                for (Prescription presc : prescriptions) {
+                    if (presc.getMedicationName().equals(medicationName) && !presc.getStatus().equals("dispensed")) {
+                        presc.setStatus("dispensed");
+                        found = true;
+                        break;
+                    }
+                }
             }
         }
-        view.displayMessage("Prescription not found.");
+
+        if (found) {
+            saveAppointments();
+            view.displayMessage("Prescription status updated.");
+        } else {
+            view.displayMessage("Prescription not found or already dispensed.");
+        }
     }
 
     /**
@@ -98,35 +115,39 @@ public class PharmacistController {
     private void submitReplenishmentRequest() {
         String medicationName = view.getMedicationNameInput();
         int quantity = view.getQuantityInput();
-        // For simplicity, we just add the quantity to the inventory
+        
+        boolean found = false;
         for (InventoryItem item : inventory) {
             if (item.getMedicationName().equals(medicationName)) {
                 item.setStockLevel(item.getStockLevel() + quantity);
                 saveInventory();
                 view.displayMessage("Replenishment request submitted.");
-                return;
+                found = true;
+                break;
             }
         }
-        view.displayMessage("Medication not found.");
-    }
-
-    /**
-     * Loads prescriptions from the serialized file.
-     */
-    private void loadPrescriptions() {
-        try {
-            prescriptions = (List<Prescription>) SerializationUtil.deserialize("prescriptions.ser");
-        } catch (Exception e) {
-            prescriptions = new ArrayList<>();
+        if (!found) {
+            view.displayMessage("Medication not found.");
         }
     }
 
     /**
-     * Saves prescriptions to the serialized file.
+     * Loads appointments from the serialized file.
      */
-    private void savePrescriptions() {
+    private void loadAppointments() {
         try {
-            SerializationUtil.serialize(prescriptions, "prescriptions.ser");
+            appointments = (List<Appointment>) SerializationUtil.deserialize("appointments.ser");
+        } catch (Exception e) {
+            appointments = new ArrayList<>();
+        }
+    }
+
+    /**
+     * Saves appointments to the serialized file.
+     */
+    private void saveAppointments() {
+        try {
+            SerializationUtil.serialize(appointments, "appointments.ser");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -152,5 +173,21 @@ public class PharmacistController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Retrieves all prescriptions from appointment outcomes.
+     *
+     * @return List of all prescriptions.
+     */
+    private List<Prescription> getAllPrescriptions() {
+        List<Prescription> allPrescriptions = new ArrayList<>();
+        for (Appointment appt : appointments) {
+            AppointmentOutcome outcome = appt.getOutcome();
+            if (outcome != null && outcome.getPrescriptions() != null) {
+                allPrescriptions.addAll(outcome.getPrescriptions());
+            }
+        }
+        return allPrescriptions;
     }
 }

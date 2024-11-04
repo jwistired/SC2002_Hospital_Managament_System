@@ -1,6 +1,7 @@
 package controllers;
 
 import models.Patient;
+import models.User;
 import models.Appointment;
 import models.AppointmentOutcome;
 import models.Doctor;
@@ -92,7 +93,7 @@ public class PatientController {
         String contactNumber = view.getContactNumberInput();
         model.setEmail(email);
         model.setContactNumber(contactNumber);
-        saveModel();
+        model.saveModel();
         view.displayMessage("Personal information updated.");
     }
 
@@ -120,8 +121,7 @@ public class PatientController {
                 "APT" + System.currentTimeMillis(),
                 model.getUserID(),
                 doctorID,
-                dateTime
-        );
+                dateTime);
         appointment.setStatus("pending");
         appointments.add(appointment);
         saveAppointments();
@@ -163,20 +163,6 @@ public class PatientController {
     }
 
     /**
-     * Saves the patient model to the serialized file.
-     */
-    private void saveModel() {
-        try {
-            // Assuming users are stored in a HashMap
-            HashMap<String, Patient> patients = (HashMap<String, Patient>) SerializationUtil.deserialize("patients.ser");
-            patients.put(model.getUserID(), model);
-            SerializationUtil.serialize(patients, "patients.ser");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * Loads appointments from the serialized file.
      */
     private void loadAppointments() {
@@ -203,7 +189,13 @@ public class PatientController {
      */
     private void loadDoctors() {
         try {
-            doctors = (HashMap<String, Doctor>) SerializationUtil.deserialize("doctors.ser");
+            HashMap<String, User> users = (HashMap<String, User>) SerializationUtil.deserialize("users.ser");
+            doctors = new HashMap<>();
+            for (User user : users.values()) {
+                if (user.getRole().equals("Doctor")) {
+                    doctors.put(user.getUserID(), (Doctor) user);
+                }
+            }
         } catch (Exception e) {
             doctors = new HashMap<>();
         }

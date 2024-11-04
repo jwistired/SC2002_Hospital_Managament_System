@@ -1,6 +1,8 @@
 package models;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import utils.SerializationUtil;
 
 /**
  * Abstract class representing a user in the hospital management system.
@@ -105,5 +107,15 @@ public abstract class User implements Serializable {
      */
     public void setSalt(String salt) {
         this.salt = salt;
+    }
+
+    public void saveModel() {
+        try {
+            HashMap<String, User> users = (HashMap<String, User>) SerializationUtil.deserialize("users.ser");
+            users.put(this.getUserID(), this);
+            SerializationUtil.serialize(users, "users.ser");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

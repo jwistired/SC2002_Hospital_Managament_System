@@ -2,6 +2,7 @@ package controllers;
 
 import models.Doctor;
 import models.Patient;
+import models.User;
 import models.MedicalRecord;
 import models.Appointment;
 import models.AppointmentOutcome;
@@ -98,7 +99,7 @@ public class DoctorController {
             String treatment = view.getTreatmentInput();
             patient.getMedicalRecord().addDiagnosis(diagnosis);
             patient.getMedicalRecord().addTreatment(treatment);
-            savePatients();
+            patient.saveModel();
             view.displayMessage("Medical record updated.");
         } else {
             view.displayMessage("Patient not found.");
@@ -123,7 +124,7 @@ public class DoctorController {
         String dateTimeStr = view.getAvailabilityInput();
         LocalDateTime dateTime = LocalDateTime.parse(dateTimeStr);
         model.getAvailability().add(dateTime);
-        saveModel();
+        model.saveModel();
         view.displayMessage("Availability updated.");
     }
 
@@ -177,26 +178,14 @@ public class DoctorController {
                 String dateOfAppointment = appt.getDateTime().toString();
                 String typeOfService = view.getDiagnosisInput(); // Reusing method for simplicity
                 String consultationNotes = view.getTreatmentInput(); // Reusing method for simplicity
-                AppointmentOutcome outcome = new AppointmentOutcome(dateOfAppointment, typeOfService, new ArrayList<>(), consultationNotes);
+                AppointmentOutcome outcome = new AppointmentOutcome(dateOfAppointment, typeOfService, new ArrayList<>(),
+                        consultationNotes);
                 appt.setOutcome(outcome);
                 appt.setStatus("completed");
                 saveAppointments();
                 view.displayMessage("Appointment outcome recorded.");
                 break;
             }
-        }
-    }
-
-    /**
-     * Saves the doctor model to the serialized file.
-     */
-    private void saveModel() {
-        try {
-            HashMap<String, Doctor> doctors = (HashMap<String, Doctor>) SerializationUtil.deserialize("doctors.ser");
-            doctors.put(model.getUserID(), model);
-            SerializationUtil.serialize(doctors, "doctors.ser");
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -227,20 +216,14 @@ public class DoctorController {
      */
     private void loadPatients() {
         try {
-            patients = (HashMap<String, Patient>) SerializationUtil.deserialize("patients.ser");
+            HashMap<String, User> users = (HashMap<String, User>) SerializationUtil.deserialize("users.ser");
+            for (User user : users.values()) {
+                if (user.getRole().equals("Patient")) {
+                    patients.put(user.getUserID(), (Patient) user);
+                }
+            }
         } catch (Exception e) {
             patients = new HashMap<>();
-        }
-    }
-
-    /**
-     * Saves patients to the serialized file.
-     */
-    private void savePatients() {
-        try {
-            SerializationUtil.serialize(patients, "patients.ser");
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }

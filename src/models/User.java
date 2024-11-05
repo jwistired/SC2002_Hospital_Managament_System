@@ -2,6 +2,7 @@ package models;
 
 import java.io.Serializable;
 import java.util.HashMap;
+
 import utils.SerializationUtil;
 
 /**
@@ -14,8 +15,11 @@ public abstract class User implements Serializable {
     protected String hashedPassword;
     protected String salt;
     protected String role;
-    protected String contactNumber;
+    protected String contactNo;
     protected String email;
+    protected String bloodType;
+    protected String gender;
+    protected String dateOfBirth;
     protected boolean firstLogin;
 
     /**
@@ -36,6 +40,19 @@ public abstract class User implements Serializable {
     }
 
     // Getters and Setters
+
+    public String getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public String getBloodType() {
+        return bloodType;
+    }
+
 
     public String getUserID() {
         return userID;
@@ -67,11 +84,11 @@ public abstract class User implements Serializable {
     }
 
     public String getContactNumber() {
-        return contactNumber;
+        return contactNo;
     }
 
-    public void setContactNumber(String contactNumber) {
-        this.contactNumber = contactNumber;
+    public void setContactNo(String contactNo) {
+        this.contactNo = contactNo;
     }
 
     public String getEmail() {

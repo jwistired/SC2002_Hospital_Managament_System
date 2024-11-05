@@ -14,6 +14,8 @@ public class MedicalRecord implements Serializable {
     private String dateOfBirth;
     private String gender;
     private String bloodType;
+    private String email;
+    private String contactNo;
     private List<String> pastDiagnoses;
     private List<String> pastTreatments;
 
@@ -22,10 +24,20 @@ public class MedicalRecord implements Serializable {
      *
      * @param patientID The patient's ID.
      * @param name      The patient's name.
+     * @param dateOfBirth The patient's date of birth.
+     * @param gender    The patient's gender.
+     * @param bloodType The patient's blood type.
+     * @param contactInfo The patient's contact information.
      */
-    public MedicalRecord(String patientID, String name) {
+
+    public MedicalRecord(String patientID, String name, String dateOfBirth, String gender, String bloodType, String email, String contactNo){
         this.patientID = patientID;
         this.name = name;
+        this.dateOfBirth = dateOfBirth;
+        this.gender = gender;
+        this.bloodType = bloodType;
+        this.email = email;
+        this.contactNo = contactNo;
         this.pastDiagnoses = new ArrayList<>();
         this.pastTreatments = new ArrayList<>();
     }
@@ -39,6 +51,43 @@ public class MedicalRecord implements Serializable {
     public String getName() {
         return name;
     }
+
+    public String getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public String getBloodType() {
+        return bloodType;
+    }
+
+    public String  getEmail() {
+        return email;
+    }
+
+    public  String getContactNo() {
+        return contactNo;
+    }
+
+    public void setEmail(String email){
+        this.email = email;
+    }
+
+    public void setContactNo(String contactNo){
+        this.contactNo = contactNo;
+    }
+
+    public List<String> getPastDiagnoses() {
+        return pastDiagnoses;
+    }
+
+    public List<String> getPastTreatments() {
+        return pastTreatments;
+    }
+
 
     // Other getters and setters for the fields
 

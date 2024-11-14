@@ -1,11 +1,10 @@
 package views;
 
-import models.User;
-import models.Appointment;
-import models.InventoryItem;
-
 import java.util.List;
 import java.util.Scanner;
+import models.Appointment;
+import models.InventoryItem;
+import models.User;
 
 /**
  * Class representing the administrator view in the hospital management system.
@@ -155,6 +154,11 @@ public class AdminView {
             System.out.println(request);
         }
     }
+    public boolean getApprovalDecision(String medicationName, int requestedAmount) {
+        System.out.print("Approve replenishment for " + medicationName + " (requested: " + requestedAmount + ")? (Y/N): ");
+        String decision = scanner.nextLine().trim().toUpperCase();
+        return decision.equals("Y");
+    } 
 
     /**
      * Displays a message to the user.

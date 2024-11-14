@@ -2,6 +2,7 @@ package controllers;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,10 +35,20 @@ public class DoctorController {
     public DoctorController(Doctor model, DoctorView view) {
         this.model = model;
         this.view = view;
-        this.schedule = new ArrayList<>();
         loadAppointments();
         loadPatients();
-        initializeSchedule();
+        loadSchedule();
+
+        if ((this.schedule == null) || this.schedule.isEmpty()) {
+            this.schedule = new ArrayList<>();
+            initializeSchedule();
+            saveSchedule();
+            view.displayMessage("Schedule initialized.");
+        }
+        else{
+            loadSchedule();
+            view.displayMessage("Schedule loaded.");
+        }
     }
 
     /**
@@ -73,10 +84,6 @@ public class DoctorController {
                 case 8:
                     view.displayMessage("Logging out...");
                     break;
-                case 9:
-                    for(String slot: schedule){
-                        System.out.println(slot);
-                    }
                 default:
                     view.displayMessage("Invalid choice. Please try again.");
             }
@@ -84,16 +91,38 @@ public class DoctorController {
     }
 
     /**
-     * Initializes the schedule with time slots for the next 7 days.
+     * Initializes the schedule with time slots for the next 7 days. Placeholder for actual implementation.
      */
     private void initializeSchedule() {
         String[] timeSlots = {"09:00", "10:00", "11:00", "14:00", "15:00"};
         LocalDate date = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
         for (int i = 0; i < 7; i++) {
             LocalDate currentDate = date.plusDays(i);
             for (String time : timeSlots) {
-                schedule.add(currentDate.toString() + " " + time + " - Available");
+                LocalTime localTime = LocalTime.parse(time);
+                LocalDateTime dateTime = LocalDateTime.of(currentDate, localTime);
+                schedule.add(dateTime.format(formatter));
             }
+        }
+    }
+
+    private void saveSchedule() {
+        try {
+            String fileName = "Schedule_" + model.getUserID() + ".ser";
+            SerializationUtil.serialize(this.schedule, fileName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private void loadSchedule() {
+        try {
+            String fileName = "Schedule_" + model.getUserID() + ".ser";
+            this.schedule = (List<String>) SerializationUtil.deserialize(fileName);
+        } catch (Exception e) {
+            this.schedule = new ArrayList<>();
         }
     }
 
@@ -141,7 +170,6 @@ public class DoctorController {
     // }
 
     private void viewPersonalSchedule() {
-
         view.displayPersonalSchedule(schedule);
     }
 
@@ -150,31 +178,40 @@ public class DoctorController {
      */
     private void setAvailability() {
         //Get list of available times
+        view.displayMessage("Available times:");
         view.displayPersonalSchedule(schedule);
-
 
         //Set availability on date
         String dateTimeStr = view.getAvailabilityInput();
 
-        
-
         //Update model
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        LocalDateTime dateTime = LocalDateTime.parse(dateTimeStr, formatter);
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        LocalDateTime dateTime = LocalDateTime.parse(dateTimeStr, inputFormatter);
         //model.getAvailability().add(dateTime);
 
-        System.out.println("Current availability: " + model.getAvailability());
+        // Convert to the same format used in the schedule
+        String formattedDateTimeStr = dateTime.format(inputFormatter);
 
+        // Debug: Print the date-time to be removed
+        System.out.println("Date-time to be removed: " + dateTime.toString());
+
+        //System.out.println("Current availability: " + model.getAvailability());
+
+        
+        //if (model.getAvailability().remove(dateTime)) {
         // Remove the specified date-time from availability
-        if (model.getAvailability().remove(dateTime)) {
+        if (schedule.remove(formattedDateTimeStr)) {
             view.displayMessage("Availability removed.");
-            schedule.remove(dateTime.toString()); //update schedule
+            view.displayMessage("Availability updated.");
         } else {
             view.displayMessage("Specified date-time was not found in availability.");
+            view.displayMessage("Availability not updated.");
         }
 
-        model.saveModel();
-        view.displayMessage("Availability updated.");
+
+        //model.saveModel();
+        saveSchedule();
+        //view.displayMessage("Availability updated.");
     }
 
     /**
@@ -195,10 +232,19 @@ public class DoctorController {
         String decision = view.getDecisionInput();
 
         //Update appointment status
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         for (Appointment appt : pendingAppointments) {
             if (appt.getAppointmentID().equals(appointmentID)) {
                 if (decision.equalsIgnoreCase("A")) {
+                    LocalDateTime dateTime = appt.getDateTime();
+                    String formattedDateTimeStr = dateTime.format(formatter);
+                    if (schedule.remove(formattedDateTimeStr)) {
+                    view.displayMessage("Date " + formattedDateTimeStr + " blocked in schedule.");
                     appt.setStatus("confirmed");
+                    saveSchedule();
+                    } else {
+                        view.displayMessage("Date " + formattedDateTimeStr + " not found in schedule.");
+                    }
                 } else {
                     appt.setStatus("declined");
                 }
@@ -208,8 +254,6 @@ public class DoctorController {
             }
         }
     }
-
-
 
     /**
      * Displays the doctor's upcoming appointments.
@@ -241,6 +285,9 @@ public class DoctorController {
                 saveAppointments();
                 view.displayMessage("Appointment outcome recorded.");
                 break;
+            }
+            else{
+                view.displayMessage("Appointment not found.");
             }
         }
     }
@@ -282,4 +329,9 @@ public class DoctorController {
             patients = new HashMap<>();
         }
     }
+
+    public List<String> getDoctor(){
+        return schedule;
+    }
+
 }

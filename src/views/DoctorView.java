@@ -1,5 +1,8 @@
 package views;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Scanner;
 import models.Appointment;
@@ -106,11 +109,32 @@ public class DoctorView {
      *
      * @return The availability time.
      */
+
     public String getAvailabilityInput() {
-        //To be changed once confirmed
-        System.out.print("Enter Availability Time (YYYY-MM-DD HH:MM): ");
-        return scanner.nextLine();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        String dateTimeStr;
+        while (true) {
+            System.out.print("Enter Date and Time to block (YYYY-MM-DD HH:MM): ");
+            dateTimeStr = scanner.nextLine();
+            try {
+                LocalDateTime.parse(dateTimeStr, formatter);
+                break; // Exit loop if parsing is successful
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid format. Please enter the date and time in the format YYYY-MM-DD HH:MM.");
+            }
+        }
+        return dateTimeStr;
     }
+
+
+
+     //Original Code
+    // public String getAvailabilityInput() {
+    //     //To be changed once confirmed
+    //     System.out.print("Enter Availability Time (YYYY-MM-DD HH:MM): ");
+    //     scanner.nextLine();
+    //     return scanner.nextLine();
+    // }
 
     /**
      * Displays appointment requests for the doctor.

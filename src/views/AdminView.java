@@ -46,12 +46,14 @@ public class AdminView {
      * Displays the staff management menu.
      */
     public void displayStaffMenu() {
-        System.out.println("\nStaff Management:");
+        System.out.println("Staff Management Menu:");
         System.out.println("1. Add Staff Member");
         System.out.println("2. Update Staff Member");
         System.out.println("3. Remove Staff Member");
-        System.out.println("4. Return to Main Menu");
+        System.out.println("4. View Staff Members");
+        System.out.println("5. Return to Main Menu");
     }
+    
 
     /**
      * Displays a list of staff members.

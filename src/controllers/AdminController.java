@@ -86,12 +86,26 @@ public class AdminController {
                     removeStaffMember();
                     break;
                 case 4:
+                    viewStaffMembers();
+                    break;
+                case 5:
                     view.displayMessage("Returning to main menu...");
                     break;
                 default:
                     view.displayMessage("Invalid choice. Please try again.");
             }
-        } while (choice != 4);
+        } while (choice != 5);
+    }
+
+    /**
+    * Displays a list of all staff members.
+    */
+    private void viewStaffMembers() {
+        if (users.isEmpty()) {
+            view.displayMessage("No staff members found.");
+            return;
+        }
+        view.displayStaffList(new ArrayList<>(users.values()));
     }
 
     /**
@@ -123,8 +137,33 @@ public class AdminController {
      * Updates an existing staff member.
      */
     private void updateStaffMember() {
-        // Implementation for updating a staff member
+        String userID = view.getUserIDInput();
+        if (!users.containsKey(userID)) {
+            view.displayMessage("User ID not found.");
+            return;
+        }
+    
+        User oldUser = users.get(userID);
+        String newName = view.getNameInput();
+        String newPassword = view.getPasswordInput();
+    
+        // Create a new User object with updated details
+        User updatedUser = null;
+        if (oldUser instanceof Doctor) {
+            updatedUser = new Doctor(userID, newName, newPassword);
+        } else if (oldUser instanceof Pharmacist) {
+            updatedUser = new Pharmacist(userID, newName, newPassword);
+        } else {
+            view.displayMessage("Unknown user role. Cannot update.");
+            return;
+        }
+    
+        // Replace the old user with the updated user
+        users.put(userID, updatedUser);
+        saveUsers();
+        view.displayMessage("Staff member updated successfully.");
     }
+    
 
     /**
      * Removes a staff member.

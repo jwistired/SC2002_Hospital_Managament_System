@@ -1,9 +1,9 @@
 package views;
 
-import models.Appointment;
-import models.MedicalRecord;
 import java.util.List;
 import java.util.Scanner;
+import models.Appointment;
+import models.MedicalRecord;
 
 /**
  * Class representing the doctor view in the hospital management system.
@@ -49,10 +49,14 @@ public class DoctorView {
      * @param record The medical record to display.
      */
     public void displayPatientMedicalRecord(MedicalRecord record) {
+        // Display patient details
         System.out.println("\nPatient Medical Record:");
         System.out.println("Patient ID: " + record.getPatientID());
         System.out.println("Name: " + record.getName());
+
         // Display other details
+        System.out.println("Past Diagnoses: " +record.getpastDiagnoses());
+        System.out.println("Past Treatments: " +record.getpastTreatments());
     }
 
     /**
@@ -103,6 +107,7 @@ public class DoctorView {
      * @return The availability time.
      */
     public String getAvailabilityInput() {
+        //To be changed once confirmed
         System.out.print("Enter Availability Time (YYYY-MM-DD HH:MM): ");
         return scanner.nextLine();
     }

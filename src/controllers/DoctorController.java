@@ -1,18 +1,18 @@
 package controllers;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import models.Appointment;
+import models.AppointmentOutcome;
 import models.Doctor;
 import models.Patient;
 import models.User;
-import models.MedicalRecord;
-import models.Appointment;
-import models.AppointmentOutcome;
-import views.DoctorView;
 import utils.SerializationUtil;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashMap;
+import views.DoctorView;
 
 /**
  * Controller class for handling doctor-related operations.
@@ -23,6 +23,8 @@ public class DoctorController {
     private List<Appointment> appointments;
     private HashMap<String, Patient> patients;
 
+    private List<String> schedule;
+
     /**
      * Constructs a DoctorController object.
      *
@@ -32,8 +34,10 @@ public class DoctorController {
     public DoctorController(Doctor model, DoctorView view) {
         this.model = model;
         this.view = view;
+        this.schedule = new ArrayList<>();
         loadAppointments();
         loadPatients();
+        initializeSchedule();
     }
 
     /**
@@ -69,6 +73,10 @@ public class DoctorController {
                 case 8:
                     view.displayMessage("Logging out...");
                     break;
+                case 9:
+                    for(String slot: schedule){
+                        System.out.println(slot);
+                    }
                 default:
                     view.displayMessage("Invalid choice. Please try again.");
             }
@@ -76,11 +84,25 @@ public class DoctorController {
     }
 
     /**
+     * Initializes the schedule with time slots for the next 7 days.
+     */
+    private void initializeSchedule() {
+        String[] timeSlots = {"09:00", "10:00", "11:00", "14:00", "15:00"};
+        LocalDate date = LocalDate.now();
+        for (int i = 0; i < 7; i++) {
+            LocalDate currentDate = date.plusDays(i);
+            for (String time : timeSlots) {
+                schedule.add(currentDate.toString() + " " + time + " - Available");
+            }
+        }
+    }
+
+    /**
      * Allows the doctor to view patient medical records.
      */
     private void viewPatientMedicalRecords() {
-        String patientID = view.getPatientIDInput();
-        Patient patient = patients.get(patientID);
+        String patientID = view.getPatientIDInput(); // Get patient ID input from DoctorView
+        Patient patient = patients.get(patientID); // Get patient object from patients HashMap
         if (patient != null) {
             view.displayPatientMedicalRecord(patient.getMedicalRecord());
         } else {
@@ -92,14 +114,14 @@ public class DoctorController {
      * Allows the doctor to update patient medical records.
      */
     private void updatePatientMedicalRecords() {
-        String patientID = view.getPatientIDInput();
-        Patient patient = patients.get(patientID);
+        String patientID = view.getPatientIDInput(); // Get patient ID input from DoctorView
+        Patient patient = patients.get(patientID); // Get patient object from patients HashMap
         if (patient != null) {
-            String diagnosis = view.getDiagnosisInput();
-            String treatment = view.getTreatmentInput();
-            patient.getMedicalRecord().addDiagnosis(diagnosis);
-            patient.getMedicalRecord().addTreatment(treatment);
-            patient.saveModel();
+            String diagnosis = view.getDiagnosisInput(); // Get diagnosis input from DoctorView
+            String treatment = view.getTreatmentInput(); // Get treatment input from DoctorView
+            patient.getMedicalRecord().addDiagnosis(diagnosis); //Add diagnosis to patient's medical record
+            patient.getMedicalRecord().addTreatment(treatment); //Add treatment to patient's medical record
+            patient.saveModel(); // Save to patient model file
             view.displayMessage("Medical record updated.");
         } else {
             view.displayMessage("Patient not found.");
@@ -109,11 +131,17 @@ public class DoctorController {
     /**
      * Displays the doctor's personal schedule.
      */
+    // private void viewPersonalSchedule() {
+    //     // List<String> NewSchedule = new ArrayList<>();
+    //     // for (LocalDateTime time : model.getAvailability()) {
+    //     //     schedule.add(time.toString());
+    //     // }
+    //     //schedule = NewSchedule;
+    //     view.displayPersonalSchedule(schedule);
+    // }
+
     private void viewPersonalSchedule() {
-        List<String> schedule = new ArrayList<>();
-        for (LocalDateTime time : model.getAvailability()) {
-            schedule.add(time.toString());
-        }
+
         view.displayPersonalSchedule(schedule);
     }
 
@@ -121,9 +149,30 @@ public class DoctorController {
      * Allows the doctor to set availability for appointments.
      */
     private void setAvailability() {
+        //Get list of available times
+        view.displayPersonalSchedule(schedule);
+
+
+        //Set availability on date
         String dateTimeStr = view.getAvailabilityInput();
-        LocalDateTime dateTime = LocalDateTime.parse(dateTimeStr);
-        model.getAvailability().add(dateTime);
+
+        
+
+        //Update model
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        LocalDateTime dateTime = LocalDateTime.parse(dateTimeStr, formatter);
+        //model.getAvailability().add(dateTime);
+
+        System.out.println("Current availability: " + model.getAvailability());
+
+        // Remove the specified date-time from availability
+        if (model.getAvailability().remove(dateTime)) {
+            view.displayMessage("Availability removed.");
+            schedule.remove(dateTime.toString()); //update schedule
+        } else {
+            view.displayMessage("Specified date-time was not found in availability.");
+        }
+
         model.saveModel();
         view.displayMessage("Availability updated.");
     }
@@ -133,14 +182,19 @@ public class DoctorController {
      */
     private void handleAppointmentRequests() {
         List<Appointment> pendingAppointments = new ArrayList<>();
+        //Get list of pending appointments matching doctor ID
         for (Appointment appt : appointments) {
             if (appt.getDoctorID().equals(model.getUserID()) && appt.getStatus().equals("pending")) {
                 pendingAppointments.add(appt);
             }
         }
+
+        //Display list of pending appointments
         view.displayAppointmentRequests(pendingAppointments);
         String appointmentID = view.getAppointmentIDInput();
         String decision = view.getDecisionInput();
+
+        //Update appointment status
         for (Appointment appt : pendingAppointments) {
             if (appt.getAppointmentID().equals(appointmentID)) {
                 if (decision.equalsIgnoreCase("A")) {
@@ -154,6 +208,8 @@ public class DoctorController {
             }
         }
     }
+
+
 
     /**
      * Displays the doctor's upcoming appointments.

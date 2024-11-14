@@ -42,6 +42,14 @@ public class MedicalRecord implements Serializable {
 
     // Other getters and setters for the fields
 
+    public List<String> getpastDiagnoses(){
+        return pastDiagnoses;
+    }
+
+    public List<String> getpastTreatments(){
+        return pastTreatments;
+    }
+
     public void addDiagnosis(String diagnosis) {
         pastDiagnoses.add(diagnosis);
     }

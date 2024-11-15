@@ -53,21 +53,19 @@ public class AdminController {
                     viewAppointmentDetails();
                     break;
                 case 3:
-                    manageMedicationInventory();
+                    manageMedicationInventoryAndReplenishment();
                     break;
                 case 4:
-                    approveReplenishmentRequests();
-                    break;
-                case 5:
                     view.displayMessage("Logging out...");
                     break;
                 default:
                     view.displayMessage("Invalid choice. Please try again.");
             }
-        } while (choice != 5);
+        } while (choice != 4);
     }
 
-    /**
+
+        /**
      * Manages hospital staff by adding, updating, or removing staff members.
      */
     private void manageHospitalStaff() {
@@ -179,26 +177,163 @@ public class AdminController {
         }
     }
 
+
+    /**
+     * Manages medication inventory and approves replenishment requests.
+     */
+    private void manageMedicationInventoryAndReplenishment() {
+        int choice;
+        do {
+            view.displayMedicationMenu();
+            choice = view.getMedicationMenuChoice();
+            switch (choice) {
+                case 1:
+                    addInventoryItem();
+                    break;
+                case 2:
+                    updateInventoryItem();
+                    break;
+                case 3:
+                    removeInventoryItem();
+                    break;
+                case 4:
+                    viewInventoryItems();
+                    break;
+                case 5:
+                    approveReplenishmentRequest();
+                    break;
+                case 6:
+                    view.displayMessage("Returning to main menu...");
+                    break;
+                default:
+                    view.displayMessage("Invalid choice. Please try again.");
+            }
+        } while (choice != 6);
+    }
+
+    /**
+     * Adds a new inventory item.
+     */
+    private void addInventoryItem() {
+        String medicationName = view.getMedicationNameInput();
+        int stockLevel = view.getInventoryItemQuantityInput();
+        int lowStockAlertLevel = view.getLowStockAlertLevelInput(); // Ensure this method exists in AdminView
+
+        InventoryItem newItem = new InventoryItem(medicationName, stockLevel, lowStockAlertLevel);
+        inventory.add(newItem);
+        saveInventory();
+        view.displayMessage("Inventory item added successfully.");
+    }
+
+    /**
+     * Updates an existing inventory item.
+     */
+    private void updateInventoryItem() {
+        String medicationName = view.getMedicationNameInput();
+        InventoryItem item = findInventoryItemByName(medicationName);
+
+        if (item == null) {
+            view.displayMessage("Medication not found in inventory.");
+            return;
+        }
+
+        System.out.println("Current Stock Level: " + item.getStockLevel());
+        int newStockLevel = view.getInventoryItemQuantityInput();
+        item.setStockLevel(newStockLevel);
+
+        System.out.println("Current Low Stock Alert Level: " + item.getLowStockAlertLevel());
+        int newLowStockAlertLevel = view.getLowStockAlertLevelInput();
+        item.setLowStockAlertLevel(newLowStockAlertLevel);
+
+        saveInventory();
+        view.displayMessage("Inventory item updated successfully.");
+    }
+
+    /**
+     * Removes an inventory item.
+     */
+    private void removeInventoryItem() {
+        String medicationName = view.getMedicationNameInput();
+        InventoryItem item = findInventoryItemByName(medicationName);
+
+        if (item != null) {
+            inventory.remove(item);
+            saveInventory();
+            view.displayMessage("Inventory item removed successfully.");
+        } else {
+            view.displayMessage("Medication not found in inventory.");
+        }
+    }
+
+    /**
+     * Displays all inventory items.
+     */
+    private void viewInventoryItems() {
+        view.displayInventory(inventory);
+    }
+
+    /**
+     * Approves a replenishment request by updating inventory quantities.
+     */
+    private void approveReplenishmentRequest() {
+        List<InventoryItem> pendingRequests = getPendingReplenishmentRequests();
+        view.displayReplenishmentRequests(pendingRequests);
+
+        if (pendingRequests.isEmpty()) {
+            return;
+        }
+
+        String medicationName = view.getReplenishmentApprovalInput();
+        InventoryItem itemToApprove = findInventoryItemByName(medicationName);
+
+        if (itemToApprove != null && itemToApprove.getReplenishRequestAmount() > 0) {
+            int replenishAmount = itemToApprove.getReplenishRequestAmount();
+            itemToApprove.setStockLevel(itemToApprove.getStockLevel() + replenishAmount);
+            itemToApprove.setReplenishRequestAmount(0); // Reset after approval
+            saveInventory();
+            view.displayMessage("Replenishment request approved and inventory updated.");
+        } else {
+            view.displayMessage("Invalid Medication Name or no pending replenishment request for this medication.");
+        }
+    }
+
+    /**
+     * Retrieves inventory items with pending replenishment requests.
+     *
+     * @return List of inventory items with replenishRequestAmount > 0.
+     */
+    private List<InventoryItem> getPendingReplenishmentRequests() {
+        List<InventoryItem> pending = new ArrayList<>();
+        for (InventoryItem item : inventory) {
+            if (item.getReplenishRequestAmount() > 0) {
+                pending.add(item);
+            }
+        }
+        return pending;
+    }
+
+    /**
+     * Finds an inventory item by its medication name.
+     *
+     * @param medicationName The name of the medication.
+     * @return The InventoryItem object or null if not found.
+     */
+    private InventoryItem findInventoryItemByName(String medicationName) {
+        for (InventoryItem item : inventory) {
+            if (item.getMedicationName().equalsIgnoreCase(medicationName)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
     /**
      * Displays appointment details.
      */
     private void viewAppointmentDetails() {
         view.displayAppointments(appointments);
     }
-
-    /**
-     * Manages the medication inventory.
-     */
-    private void manageMedicationInventory() {
-        // Implementation for managing medication inventory
-    }
-
-    /**
-     * Approves replenishment requests.
-     */
-    private void approveReplenishmentRequests() {
-        // Implementation for approving replenishment requests
-    }
+      
 
     /**
      * Loads users from the serialized file.
@@ -234,6 +369,17 @@ public class AdminController {
     }
 
     /**
+     * Saves appointments to the serialized file.
+     */
+    private void saveAppointments() {
+        try {
+            SerializationUtil.serialize(appointments, "appointments.ser");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Loads inventory from the serialized file.
      */
     private void loadInventory() {
@@ -241,6 +387,17 @@ public class AdminController {
             inventory = (List<InventoryItem>) SerializationUtil.deserialize("inventory.ser");
         } catch (Exception e) {
             inventory = new ArrayList<>();
+        }
+    }
+
+    /**
+     * Saves inventory to the serialized file.
+     */
+    private void saveInventory() {
+        try {
+            SerializationUtil.serialize(inventory, "inventory.ser");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

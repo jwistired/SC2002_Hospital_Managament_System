@@ -10,6 +10,7 @@ public class InventoryItem implements Serializable {
     private String medicationName;
     private int stockLevel;
     private int lowStockAlertLevel;
+    private int replenishRequestAmount;
 
     /**
      * Constructs an InventoryItem object.
@@ -44,5 +45,13 @@ public class InventoryItem implements Serializable {
 
     public void setLowStockAlertLevel(int lowStockAlertLevel) {
         this.lowStockAlertLevel = lowStockAlertLevel;
+    }
+
+    public int getReplenishRequestAmount() {
+        return replenishRequestAmount;
+    }
+
+    public void setReplenishRequestAmount(int replenishRequestAmount) {
+        this.replenishRequestAmount = replenishRequestAmount;
     }
 }

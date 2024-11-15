@@ -24,7 +24,7 @@ public class DoctorController {
     private List<Appointment> appointments;
     private HashMap<String, Patient> patients;
 
-    private List<String> schedule;
+    //private List<String> schedule;
 
     /**
      * Constructs a DoctorController object.
@@ -39,8 +39,7 @@ public class DoctorController {
         loadPatients();
         loadSchedule();
 
-        if ((this.schedule == null) || this.schedule.isEmpty()) {
-            this.schedule = new ArrayList<>();
+        if ((this.model.getSchedule() == null) || this.model.getSchedule().isEmpty()) {
             initializeSchedule();
             saveSchedule();
             view.displayMessage("Schedule initialized.");
@@ -97,21 +96,23 @@ public class DoctorController {
         String[] timeSlots = {"09:00", "10:00", "11:00", "14:00", "15:00"};
         LocalDate date = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
+        List<String> tempschedule = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
             LocalDate currentDate = date.plusDays(i);
             for (String time : timeSlots) {
                 LocalTime localTime = LocalTime.parse(time);
                 LocalDateTime dateTime = LocalDateTime.of(currentDate, localTime);
-                schedule.add(dateTime.format(formatter));
+                tempschedule.add(dateTime.format(formatter));
             }
         }
+        model.setSchedule(tempschedule);
     }
 
     private void saveSchedule() {
         try {
             String fileName = "Schedule_" + model.getUserID() + ".ser";
-            SerializationUtil.serialize(this.schedule, fileName);
+            List<String> schedule = model.getSchedule();
+            SerializationUtil.serialize(model.getSchedule(), fileName);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -120,9 +121,10 @@ public class DoctorController {
     private void loadSchedule() {
         try {
             String fileName = "Schedule_" + model.getUserID() + ".ser";
-            this.schedule = (List<String>) SerializationUtil.deserialize(fileName);
+            //Load schedule from serialized file
+            model.setSchedule((List<String>) SerializationUtil.deserialize(fileName));
         } catch (Exception e) {
-            this.schedule = new ArrayList<>();
+            initializeSchedule();
         }
     }
 
@@ -170,6 +172,7 @@ public class DoctorController {
     // }
 
     private void viewPersonalSchedule() {
+        List<String> schedule = model.getSchedule();
         view.displayPersonalSchedule(schedule);
     }
 
@@ -177,6 +180,8 @@ public class DoctorController {
      * Allows the doctor to set availability for appointments.
      */
     private void setAvailability() {
+
+        List<String> schedule = model.getSchedule();
         //Get list of available times
         view.displayMessage("Available times:");
         view.displayPersonalSchedule(schedule);
@@ -227,6 +232,7 @@ public class DoctorController {
         }
 
         //Display list of pending appointments
+        List<String> schedule = model.getSchedule();
         view.displayAppointmentRequests(pendingAppointments);
         String appointmentID = view.getAppointmentIDInput();
         String decision = view.getDecisionInput();
@@ -328,10 +334,6 @@ public class DoctorController {
         } catch (Exception e) {
             patients = new HashMap<>();
         }
-    }
-
-    public List<String> getDoctor(){
-        return schedule;
     }
 
 }

@@ -2,7 +2,6 @@ package models;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.time.LocalDateTime;
 
 /**
  * Class representing an appointment in the hospital management system.
@@ -48,6 +47,10 @@ public class Appointment implements Serializable {
 
     public LocalDateTime getDateTime() {
         return dateTime;
+    }
+
+    public void setDateTime(LocalDateTime dateTime) {
+        this.dateTime = dateTime; // Update the dateTime property
     }
 
     public String getStatus() {

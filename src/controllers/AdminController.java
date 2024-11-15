@@ -1,17 +1,16 @@
 package controllers;
 
-import models.Administrator;
-import models.User;
-import models.Doctor;
-import models.Pharmacist;
-import models.Appointment;
-import models.InventoryItem;
-import views.AdminView;
-import utils.SerializationUtil;
-
-import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import models.Administrator;
+import models.Appointment;
+import models.Doctor;
+import models.InventoryItem;
+import models.Pharmacist;
+import models.User;
+import utils.SerializationUtil;
+import views.AdminView;
 
 /**
  * Controller class for handling administrator-related operations.
@@ -157,8 +156,59 @@ public class AdminController {
     /**
      * Approves replenishment requests.
      */
-    private void approveReplenishmentRequests() {
-        // Implementation for approving replenishment requests
+private void approveReplenishmentRequests() {
+    boolean found = false;
+    List<String> pendingRequests = new ArrayList<>();
+
+    // Collect all pending requests for display
+    for (InventoryItem item : inventory) {
+        if (item.getReplenishRequestAmount() > 0) {
+            pendingRequests.add("Medication: " + item.getMedicationName() + ", Requested Amount: " + item.getReplenishRequestAmount());
+            found = true;
+        }
+    }
+
+    if (!found) {
+        view.displayMessage("No pending replenishment requests.");
+        return;
+    }
+
+    // Display all pending requests
+    view.displayReplenishmentRequests(pendingRequests);
+
+    // Process each request individually
+    for (InventoryItem item : inventory) {
+        if (item.getReplenishRequestAmount() > 0) {
+            String medicationName = item.getMedicationName();
+            int requestedAmount = item.getReplenishRequestAmount();
+
+            // Prompt for approval or rejection
+            boolean approve = view.getApprovalDecision(medicationName, requestedAmount);
+
+            if (approve) {
+                item.setStockLevel(item.getStockLevel() + requestedAmount);
+                view.displayMessage("Replenishment for " + medicationName + " approved.");
+            } else {
+                view.displayMessage("Replenishment for " + medicationName + " rejected.");
+            }
+
+            // Reset the request amount after processing
+            item.setReplenishRequestAmount(0);
+            saveInventory(); // Save after each decision
+        }
+    }
+}
+
+
+      /**
+     * Saves inventory to the serialized file.
+     */
+    private void saveInventory() {
+        try {
+            SerializationUtil.serialize(inventory, "inventory.ser");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**

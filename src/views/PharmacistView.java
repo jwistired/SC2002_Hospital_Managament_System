@@ -1,10 +1,9 @@
 package views;
 
-import models.Prescription;
-import models.InventoryItem;
-
 import java.util.List;
 import java.util.Scanner;
+import models.InventoryItem;
+import models.Prescription;
 
 /**
  * Class representing the pharmacist view in the hospital management system.

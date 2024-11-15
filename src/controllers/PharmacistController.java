@@ -1,17 +1,14 @@
 package controllers;
 
-import models.Pharmacist;
-import models.Prescription;
-import models.InventoryItem;
+import java.util.ArrayList;
+import java.util.List;
 import models.Appointment;
 import models.AppointmentOutcome;
-import views.PharmacistView;
+import models.InventoryItem;
+import models.Pharmacist;
+import models.Prescription;
 import utils.SerializationUtil;
-import utils.Config;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashMap;
+import views.PharmacistView;
 
 /**
  * Controller class for handling pharmacist-related operations.
@@ -85,7 +82,7 @@ public class PharmacistController {
             if (outcome != null) {
                 List<Prescription> prescriptions = outcome.getPrescriptions();
                 for (Prescription presc : prescriptions) {
-                    if (presc.getMedicationName().equals(medicationName) && !presc.getStatus().equals("dispensed")) {
+                    if (presc.getMedicationName().equalsIgnoreCase(medicationName) && !presc.getStatus().equals("dispensed")) {
                         presc.setStatus("dispensed");
                         found = true;
                         break;
@@ -118,8 +115,9 @@ public class PharmacistController {
         
         boolean found = false;
         for (InventoryItem item : inventory) {
-            if (item.getMedicationName().equals(medicationName)) {
-                item.setStockLevel(item.getStockLevel() + quantity);
+            if (item.getMedicationName().equalsIgnoreCase(medicationName)) {
+                //Request needs to be approved by admin
+                item.setReplenishRequestAmount(quantity);
                 saveInventory();
                 view.displayMessage("Replenishment request submitted.");
                 found = true;

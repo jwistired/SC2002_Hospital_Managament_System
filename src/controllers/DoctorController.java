@@ -37,7 +37,6 @@ public class DoctorController {
         this.view = view;
         loadAppointments();
         loadPatients();
-        loadSchedule();
 
         if ((this.model.getSchedule() == null) || this.model.getSchedule().isEmpty()) {
             initializeSchedule();
@@ -162,18 +161,8 @@ public class DoctorController {
     /**
      * Displays the doctor's personal schedule.
      */
-    // private void viewPersonalSchedule() {
-    //     // List<String> NewSchedule = new ArrayList<>();
-    //     // for (LocalDateTime time : model.getAvailability()) {
-    //     //     schedule.add(time.toString());
-    //     // }
-    //     //schedule = NewSchedule;
-    //     view.displayPersonalSchedule(schedule);
-    // }
-
     private void viewPersonalSchedule() {
-        List<String> schedule = model.getSchedule();
-        view.displayPersonalSchedule(schedule);
+        view.displayPersonalSchedule(model.getSchedule());
     }
 
     /**
@@ -192,31 +181,41 @@ public class DoctorController {
         //Update model
         DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         LocalDateTime dateTime = LocalDateTime.parse(dateTimeStr, inputFormatter);
-        //model.getAvailability().add(dateTime);
 
         // Convert to the same format used in the schedule
-        String formattedDateTimeStr = dateTime.format(inputFormatter);
+        String formattedDateTimeStr = dateTime.format(inputFormatter) + " Unavailable";
 
-        // Debug: Print the date-time to be removed
-        System.out.println("Date-time to be removed: " + dateTime.toString());
+        //find the index of existing date-time and replace it with the new one
+        int index = -1;
+        for (int i = 0; i < schedule.size(); i++) {
+            if (schedule.get(i).contains(dateTime.format(inputFormatter))) {
+                index = i;
+                break;
+            }
+        }
 
-        //System.out.println("Current availability: " + model.getAvailability());
-
-        
-        //if (model.getAvailability().remove(dateTime)) {
-        // Remove the specified date-time from availability
-        if (schedule.remove(formattedDateTimeStr)) {
-            view.displayMessage("Availability removed.");
+        if (index != -1) {
+            schedule.set(index, formattedDateTimeStr);
             view.displayMessage("Availability updated.");
         } else {
             view.displayMessage("Specified date-time was not found in availability.");
-            view.displayMessage("Availability not updated.");
         }
 
 
-        //model.saveModel();
+        // // Debug: Print the date-time to be removed
+        // System.out.println("Date-time to be removed: " + dateTime.toString());
+        
+        //if (model.getAvailability().remove(dateTime)) {
+        // Remove the specified date-time from availability
+        // if (!schedule.contains(formattedDateTimeStr)) {
+        //     schedule.add(formattedDateTimeStr);
+        //     view.displayMessage("Availability updated.");
+        // } else {
+        //     view.displayMessage("Specified date-time was not found in availability.");
+        //     view.displayMessage("Availability not updated.");
+        // }
+
         saveSchedule();
-        //view.displayMessage("Availability updated.");
     }
 
     /**
@@ -243,13 +242,24 @@ public class DoctorController {
             if (appt.getAppointmentID().equals(appointmentID)) {
                 if (decision.equalsIgnoreCase("A")) {
                     LocalDateTime dateTime = appt.getDateTime();
-                    String formattedDateTimeStr = dateTime.format(formatter);
-                    if (schedule.remove(formattedDateTimeStr)) {
-                    view.displayMessage("Date " + formattedDateTimeStr + " blocked in schedule.");
-                    appt.setStatus("confirmed");
-                    saveSchedule();
+                    String formattedDateTimeStr = dateTime.format(formatter) + " Confirmed with" + appt.getPatientID();
+
+                    //Find index of date-time in schedule
+                    int index = -1;
+                    for (int i = 0; i < schedule.size(); i++) {
+                        if (schedule.get(i).startsWith(dateTime.format(formatter))) {
+                            index = i;
+                            break;
+                        }
+                    }
+
+                     // Replace the existing entry if found, otherwise add the new entry
+                    if (index != -1) {
+                        schedule.set(index, formattedDateTimeStr);
+                        appt.setStatus("confirmed");
+                        view.displayMessage("Availability updated.");
                     } else {
-                        view.displayMessage("Date " + formattedDateTimeStr + " not found in schedule.");
+                        view.displayMessage("Specified date-time was not found in availability. Please try again.");
                     }
                 } else {
                     appt.setStatus("declined");

@@ -28,7 +28,8 @@ public class AdminView {
         System.out.println("1. View and Manage Hospital Staff");
         System.out.println("2. View Appointment Details");
         System.out.println("3. Manage Medication Inventory & Approve Replenishment Requests");
-        System.out.println("4. Logout");
+        System.out.println("4. View Doctor Schedules"); // New Option
+        System.out.println("5. Logout"); // Updated Option Number
     }
 
     /**
@@ -57,6 +58,16 @@ public class AdminView {
     }
 
     /**
+     * Displays the doctor schedules submenu.
+     */
+    public void displayDoctorScheduleMenu() {
+        System.out.println("\n--- Doctor Schedules Menu ---");
+        System.out.println("1. View All Doctors' Schedules");
+        System.out.println("2. View Individual Doctor's Schedule");
+        System.out.println("3. Return to Main Menu");
+    }
+
+    /**
      * Displays a list of staff members.
      *
      * @param staff The list of staff members.
@@ -67,12 +78,12 @@ public class AdminView {
             System.out.println("No staff members found.");
             return;
         }
+        System.out.printf("%-15s %-25s %-15s%n", "User ID", "Name", "Role");
+        System.out.println("-----------------------------------------------------");
         for (User user : staff) {
-            System.out.println("User ID: " + user.getUserID());
-            System.out.println("Name: " + user.getName());
-            System.out.println("Role: " + user.getRole());
-            System.out.println("-----------------------");
+            System.out.printf("%-15s %-25s %-15s%n", user.getUserID(), user.getName(), user.getRole());
         }
+        System.out.println("-----------------------------------------------------\n");
     }
 
     /**
@@ -86,11 +97,16 @@ public class AdminView {
             System.out.println("No appointments found.");
             return;
         }
+        System.out.printf("%-15s %-15s %-20s %-15s%n", "Appointment ID", "Doctor ID", "Patient ID", "Status");
+        System.out.println("--------------------------------------------------------------------------");
         for (Appointment appt : appointments) {
-            System.out.println("Appointment ID: " + appt.getAppointmentID());
-            // Add more details as needed
-            System.out.println("-----------------------");
+            System.out.printf("%-15s %-15s %-20s %-15s%n",
+                    appt.getAppointmentID(),
+                    appt.getDoctorID(),
+                    appt.getPatientID(),
+                    appt.getStatus());
         }
+        System.out.println("--------------------------------------------------------------------------\n");
     }
 
     /**
@@ -104,15 +120,18 @@ public class AdminView {
             System.out.println("No inventory items found.");
             return;
         }
+        System.out.printf("%-25s %-15s %-25s%n", "Medication Name", "Stock Level", "Low Stock Alert Level");
+        System.out.println("-------------------------------------------------------------------");
         for (InventoryItem item : inventory) {
-            System.out.println("Medication Name: " + item.getMedicationName());
-            System.out.println("Stock Level: " + item.getStockLevel());
-            System.out.println("Low Stock Alert Level: " + item.getLowStockAlertLevel());
+            System.out.printf("%-25s %-15d %-25d%n",
+                    item.getMedicationName(),
+                    item.getStockLevel(),
+                    item.getLowStockAlertLevel());
             if (item.getReplenishRequestAmount() > 0) {
-                System.out.println("Replenishment Requested: " + item.getReplenishRequestAmount());
+                System.out.printf("    --> Replenishment Requested: %d%n", item.getReplenishRequestAmount());
             }
-            System.out.println("-----------------------");
         }
+        System.out.println("-------------------------------------------------------------------\n");
     }
 
     /**
@@ -137,16 +156,68 @@ public class AdminView {
     }
 
     /**
- * Gets the low stock alert level input from the user.
- *
- * @return The alert level.
- */
-    public int getLowStockAlertLevelInput() {
-        System.out.print("Enter Low Stock Alert Level: ");
-        return Integer.parseInt(scanner.nextLine());
+     * Displays a doctor's schedule with booked and available timings.
+     *
+     * @param schedule     The list of schedule entries.
+     * @param appointments The list of all appointments.
+     * @param doctorID     The ID of the doctor.
+     */
+    public void displayDoctorSchedule(List<String> schedule, List<Appointment> appointments, String doctorID) {
+        System.out.println("\n--- Schedule for Doctor ID: " + doctorID + " ---");
+        if (schedule.isEmpty()) {
+            System.out.println("No schedule available.");
+            return;
+        }
+        System.out.printf("%-20s %-15s %-15s%n", "Date-Time", "Status", "Patient ID");
+        System.out.println("--------------------------------------------------------");
+        for (String entry : schedule) {
+            String[] parts = entry.split(" ");
+            if (parts.length < 2) {
+                continue; // Skip invalid entries
+            }
+            String date = parts[0];
+            String time = parts[1];
+            String dateTime = date + " " + time;
+            String status = "Available";
+            String patientID = "-";
+
+            for (Appointment appt : appointments) {
+                if (appt.getDoctorID().equals(doctorID) &&
+                        appt.getDateTime().toString().equals(dateTime) &&
+                        appt.getStatus().equalsIgnoreCase("confirmed")) {
+                    status = "Booked";
+                    patientID = appt.getPatientID();
+                    break;
+                }
+            }
+
+            System.out.printf("%-20s %-15s %-15s%n", dateTime, status, patientID);
+        }
+        System.out.println("--------------------------------------------------------\n");
     }
 
-    
+    /**
+     * Gets the low stock alert level input from the user.
+     *
+     * @return The alert level.
+     */
+    public int getLowStockAlertLevelInput() {
+        System.out.print("Enter Low Stock Alert Level: ");
+        while (true) {
+            String input = scanner.nextLine();
+            try {
+                int level = Integer.parseInt(input);
+                if (level < 0) {
+                    System.out.print("Alert level cannot be negative. Enter again: ");
+                } else {
+                    return level;
+                }
+            } catch (NumberFormatException e) {
+                System.out.print("Invalid input. Please enter a valid integer: ");
+            }
+        }
+    }
+
     /**
      * Gets the user's main menu choice.
      *
@@ -202,13 +273,31 @@ public class AdminView {
     }
 
     /**
+     * Gets the doctor schedules-related menu choice.
+     *
+     * @return The user's choice as an integer.
+     */
+    public int getDoctorScheduleMenuChoice() {
+        System.out.print("Enter your choice: ");
+        while (true) {
+            String input = scanner.nextLine();
+            try {
+                int choice = Integer.parseInt(input);
+                return choice;
+            } catch (NumberFormatException e) {
+                System.out.print("Invalid input. Please enter a number: ");
+            }
+        }
+    }
+
+    /**
      * Gets the user ID input from the user.
      *
      * @return The user ID as a string.
      */
     public String getUserIDInput() {
         System.out.print("Enter User ID: ");
-        return scanner.nextLine();
+        return scanner.nextLine().trim();
     }
 
     /**
@@ -218,7 +307,7 @@ public class AdminView {
      */
     public String getNameInput() {
         System.out.print("Enter Name: ");
-        return scanner.nextLine();
+        return scanner.nextLine().trim();
     }
 
     /**
@@ -228,7 +317,7 @@ public class AdminView {
      */
     public String getPasswordInput() {
         System.out.print("Enter Password: ");
-        return scanner.nextLine();
+        return scanner.nextLine().trim();
     }
 
     /**
@@ -238,18 +327,17 @@ public class AdminView {
      */
     public String getRoleInput() {
         System.out.print("Enter Role (Doctor/Pharmacist): ");
-        return scanner.nextLine();
+        return scanner.nextLine().trim();
     }
 
     /**
-     * Gets the inventory item ID input from the user.
-     * Note: Since InventoryItem does not have an itemId, we'll use medicationName instead.
+     * Gets the medication name input from the user.
      *
      * @return The medication name as a string.
      */
     public String getMedicationNameInput() {
         System.out.print("Enter Medication Name: ");
-        return scanner.nextLine();
+        return scanner.nextLine().trim();
     }
 
     /**
@@ -277,11 +365,11 @@ public class AdminView {
     /**
      * Gets the replenish request approval input from the user.
      *
-     * @return The medication name to approve as a string.
+     * @return The medication name to approve replenishment as a string.
      */
     public String getReplenishmentApprovalInput() {
         System.out.print("Enter Medication Name to approve replenishment: ");
-        return scanner.nextLine();
+        return scanner.nextLine().trim();
     }
 
     /**
@@ -304,6 +392,16 @@ public class AdminView {
                 System.out.print("Invalid input. Please enter a number: ");
             }
         }
+    }
+
+    /**
+     * Gets the doctor ID input from the user.
+     *
+     * @return The doctor ID as a string.
+     */
+    public String getDoctorIDInput() {
+        System.out.print("Enter Doctor ID: ");
+        return scanner.nextLine().trim();
     }
 
     /**

@@ -11,6 +11,7 @@ import models.Appointment;
 import models.AppointmentOutcome;
 import models.Doctor;
 import models.Patient;
+import models.Prescription;
 import models.User;
 import utils.SerializationUtil;
 import views.DoctorView;
@@ -23,6 +24,7 @@ public class DoctorController {
     private DoctorView view;
     private List<Appointment> appointments;
     private HashMap<String, Patient> patients;
+    private List<Prescription> availablePrescriptions;
 
     //private List<String> schedule;
 
@@ -37,17 +39,14 @@ public class DoctorController {
         this.view = view;
         loadAppointments();
         loadPatients();
+        loadPrescriptions();
 
-        //debug loadPatients()
-        if (patients.isEmpty()) {
-            System.out.println("No patients found.");
-        } else {
-            for (Patient patient : patients.values()) {
-                System.out.println(patient.getName());
-            }
+        if (patients != null) {
+            view.displayMessage("Patients loaded.");
         }
 
-        if ((this.model.getSchedule() == null) || this.model.getSchedule().isEmpty()) {
+        if (this.model.getSchedule() == null) {
+            view.displayMessage("Schedule Missing. Initializing...");
             initializeSchedule();
             saveSchedule();
             view.displayMessage("Schedule initialized.");
@@ -114,6 +113,7 @@ public class DoctorController {
             }
         }
         model.setSchedule(tempschedule);
+        view.displayMessage("Schedule initialized.");
     }
 
     /**
@@ -137,7 +137,7 @@ public class DoctorController {
             //Load schedule from serialized file
             model.setSchedule((List<String>) SerializationUtil.deserialize(fileName));
         } catch (Exception e) {
-            initializeSchedule();
+            view.displayMessage("Error loading schedule.");
         }
     }
 
@@ -307,8 +307,18 @@ public class DoctorController {
                 String dateOfAppointment = appt.getDateTime().toString();
                 String typeOfService = view.getDiagnosisInput(); // Reusing method for simplicity
                 String consultationNotes = view.getTreatmentInput(); // Reusing method for simplicity
-                AppointmentOutcome outcome = new AppointmentOutcome(dateOfAppointment, typeOfService, new ArrayList<>(),
-                        consultationNotes);
+
+                List<Prescription> patientPrescriptions = new ArrayList<>();
+                for (Prescription prescription : availablePrescriptions) {
+                    view.displayMessage(prescription.getMedicationName());
+                    String decision = view.getPrescription();
+                    if (decision.equalsIgnoreCase("Y")) {
+                        patientPrescriptions.add(prescription);
+                        view.displayMessage(prescription.getMedicationName() + " added.");
+                    }
+                }                
+
+                AppointmentOutcome outcome = new AppointmentOutcome(dateOfAppointment, typeOfService, patientPrescriptions, consultationNotes);
                 appt.setOutcome(outcome);
                 appt.setStatus("completed");
                 saveAppointments();
@@ -328,7 +338,7 @@ public class DoctorController {
         try {
             appointments = (List<Appointment>) SerializationUtil.deserialize("appointments.ser");
         } catch (Exception e) {
-            appointments = new ArrayList<>();
+            view.displayMessage("Error loading appointments.");
         }
     }
 
@@ -362,4 +372,12 @@ public class DoctorController {
         }
     }
 
+    //Load prescriptions from serialized file
+    private void loadPrescriptions() {
+        try {
+            this.availablePrescriptions = (List<Prescription>) SerializationUtil.deserialize("medication.ser");
+        } catch (Exception e) {
+            view.displayMessage("Error loading prescriptions.");
+        }
+    }
 }

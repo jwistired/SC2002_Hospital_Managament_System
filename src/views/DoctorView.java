@@ -191,6 +191,19 @@ public class DoctorView {
         return scanner.nextLine();
     }
 
+    public String getPrescription() {
+        System.out.print("Add this prescription? (Y/N): ");
+        return scanner.nextLine();
+    }
+
+    public List<String> displayPrescriptionList(List<String> prescriptions) {
+        System.out.println("Prescriptions:");
+        for (String prescription : prescriptions) {
+            System.out.println(prescription);
+        }
+        return prescriptions;
+    }
+
     /**
      * Displays a message to the user.
      *

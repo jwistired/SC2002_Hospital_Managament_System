@@ -1,18 +1,17 @@
 package controllers;
 
-import models.Patient;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import models.Appointment;
 import models.AppointmentOutcome;
 import models.Doctor;
 import models.MedicalRecord;
-import views.PatientView;
+import models.Patient;
 import utils.SerializationUtil;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashMap;
+import views.PatientView;
 
 
 /**
@@ -389,9 +388,10 @@ public class PatientController {
      */
     private void loadDoctors() {
         try {
-            doctors = (HashMap<String, Doctor>) SerializationUtil.deserialize("doctors.ser");
+            
+            HashMap<String, Doctor> doctors = (HashMap<String, Doctor>) SerializationUtil.deserialize("doctors.ser");
         } catch (Exception e) {
-            doctors = new HashMap<>();
+            HashMap<String, Doctor> doctors = new HashMap<>();
         }
     }
 }

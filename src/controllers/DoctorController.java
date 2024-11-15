@@ -38,6 +38,15 @@ public class DoctorController {
         loadAppointments();
         loadPatients();
 
+        //debug loadPatients()
+        if (patients.isEmpty()) {
+            System.out.println("No patients found.");
+        } else {
+            for (Patient patient : patients.values()) {
+                System.out.println(patient.getName());
+            }
+        }
+
         if ((this.model.getSchedule() == null) || this.model.getSchedule().isEmpty()) {
             initializeSchedule();
             saveSchedule();
@@ -107,16 +116,21 @@ public class DoctorController {
         model.setSchedule(tempschedule);
     }
 
+    /**
+     * Saves the schedule to a serialized file.
+     */
     private void saveSchedule() {
         try {
             String fileName = "Schedule_" + model.getUserID() + ".ser";
-            List<String> schedule = model.getSchedule();
             SerializationUtil.serialize(model.getSchedule(), fileName);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
+    /**
+     * Loads the schedule from a serialized file.
+     */    
     private void loadSchedule() {
         try {
             String fileName = "Schedule_" + model.getUserID() + ".ser";
@@ -131,9 +145,11 @@ public class DoctorController {
      * Allows the doctor to view patient medical records.
      */
     private void viewPatientMedicalRecords() {
+
         String patientID = view.getPatientIDInput(); // Get patient ID input from DoctorView
         Patient patient = patients.get(patientID); // Get patient object from patients HashMap
         if (patient != null) {
+            view.displayMessage("Viewing "+ patient.getName() + "'s medical record:");
             view.displayPatientMedicalRecord(patient.getMedicalRecord());
         } else {
             view.displayMessage("Patient not found.");
@@ -147,10 +163,21 @@ public class DoctorController {
         String patientID = view.getPatientIDInput(); // Get patient ID input from DoctorView
         Patient patient = patients.get(patientID); // Get patient object from patients HashMap
         if (patient != null) {
-            String diagnosis = view.getDiagnosisInput(); // Get diagnosis input from DoctorView
-            String treatment = view.getTreatmentInput(); // Get treatment input from DoctorView
-            patient.getMedicalRecord().addDiagnosis(diagnosis); //Add diagnosis to patient's medical record
-            patient.getMedicalRecord().addTreatment(treatment); //Add treatment to patient's medical record
+            view.displayMessage("Do you want to add a diagnosis?");
+            String decisionDiagnosis = view.getDecisionInput();
+
+            if (decisionDiagnosis.equalsIgnoreCase("A")) {
+                String diagnosis = view.getDiagnosisInput(); // Get diagnosis input from DoctorView
+                patient.getMedicalRecord().addDiagnosis(diagnosis); // Add diagnosis to patient's medical record
+            }
+
+            view.displayMessage("Do you want to add a treatment?");
+            String decisionTreatment = view.getDecisionInput();
+
+            if (decisionTreatment.equalsIgnoreCase("A")) {
+                String treatment = view.getTreatmentInput(); // Get treatment input from DoctorView
+                patient.getMedicalRecord().addTreatment(treatment); // Add treatment to patient's medical record
+            }
             patient.saveModel(); // Save to patient model file
             view.displayMessage("Medical record updated.");
         } else {
@@ -200,20 +227,6 @@ public class DoctorController {
         } else {
             view.displayMessage("Specified date-time was not found in availability.");
         }
-
-
-        // // Debug: Print the date-time to be removed
-        // System.out.println("Date-time to be removed: " + dateTime.toString());
-        
-        //if (model.getAvailability().remove(dateTime)) {
-        // Remove the specified date-time from availability
-        // if (!schedule.contains(formattedDateTimeStr)) {
-        //     schedule.add(formattedDateTimeStr);
-        //     view.displayMessage("Availability updated.");
-        // } else {
-        //     view.displayMessage("Specified date-time was not found in availability.");
-        //     view.displayMessage("Availability not updated.");
-        // }
 
         saveSchedule();
     }
@@ -333,16 +346,19 @@ public class DoctorController {
     /**
      * Loads patients from the serialized file.
      */
+    @SuppressWarnings("unchecked")
     private void loadPatients() {
         try {
+            patients = new HashMap<>();
             HashMap<String, User> users = (HashMap<String, User>) SerializationUtil.deserialize("users.ser");
             for (User user : users.values()) {
                 if (user.getRole().equals("Patient")) {
                     patients.put(user.getUserID(), (Patient) user);
                 }
             }
+            
         } catch (Exception e) {
-            patients = new HashMap<>();
+            System.out.println("Error loading patients.");
         }
     }
 

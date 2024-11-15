@@ -38,8 +38,12 @@ public class MedicalRecord implements Serializable {
         this.bloodType = bloodType;
         this.email = email;
         this.contactNo = contactNo;
-        this.pastDiagnoses = new ArrayList<>();
-        this.pastTreatments = new ArrayList<>();
+        if (this.pastDiagnoses == null) {
+            this.pastDiagnoses = new ArrayList<>();
+        }
+        if (this.pastTreatments == null) {
+            this.pastTreatments = new ArrayList<>();
+        }
     }
 
     // Getters and Setters
@@ -87,7 +91,6 @@ public class MedicalRecord implements Serializable {
     public List<String> getPastTreatments() {
         return pastTreatments;
     }
-
 
     // Other getters and setters for the fields
 

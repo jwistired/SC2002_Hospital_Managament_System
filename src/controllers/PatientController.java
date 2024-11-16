@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import models.Appointment;
 import models.AppointmentOutcome;
 import models.Doctor;
@@ -201,7 +200,7 @@ public class PatientController {
      * Allows the patient to schedule an appointment.
      */
     private void scheduleAppointment() {
-   
+        
         // Step 1: Show all available appointment slots for all doctors
         System.out.println("All available appointment slots:");
         Map<String, List<String>> doctorSlots = new HashMap<>();
@@ -252,13 +251,11 @@ public class PatientController {
 
             // Step 6: Check if the selected slot is available
             if (!availableSlots.contains(formattedDateTime)) {
-
                 view.displayMessage("The selected slot is not available. Please choose a different time.");
                 return;
             }
 
             // Step 7: Check if the user already has an appointment for the same time
-
             for (Appointment existingAppointment : appointments) {
                 if (existingAppointment.getPatientID().equals(model.getUserID()) && 
                     existingAppointment.getDateTime().equals(dateTime)) {
@@ -266,7 +263,6 @@ public class PatientController {
                     return;
                 }
             }
-
 
             // Step 8: Create a new appointment for the selected time slot
             Appointment appointment = new Appointment(
@@ -283,7 +279,6 @@ public class PatientController {
             // Remove the booked slot from the available slots
             availableSlots.remove(formattedDateTime);
 
-
             view.displayMessage("Appointment scheduled successfully.");
         } catch (Exception e) {
             view.displayMessage("Invalid date and time. Please enter a valid date and time.");
@@ -295,8 +290,7 @@ public class PatientController {
      */
     private void rescheduleAppointment() {
         
-
-
+        // Step 1: Fetch all appointments for the patient
         List<Appointment> patientAppointments = new ArrayList<>();
         for (Appointment appt : appointments) {
             if (appt.getPatientID().equals(model.getUserID())) {
@@ -314,7 +308,6 @@ public class PatientController {
         String appointmentID = view.getAppointmentIDInput(); // User inputs the appointment ID they want to reschedule
 
         // Step 3: Find the appointment to reschedule
-
         Appointment appointmentToReschedule = null;
         for (Appointment appt : patientAppointments) {
             if (appt.getAppointmentID().equals(appointmentID)) {
@@ -326,6 +319,7 @@ public class PatientController {
         if (appointmentToReschedule == null) {
             view.displayMessage("Appointment ID not found. Please try again.");
             return;
+        }
 
         // Step 4: Show available slots across all doctors
         Map<String, List<String>> doctorSlots = new HashMap<>();
@@ -553,7 +547,6 @@ public class PatientController {
                 // Filter out the slots that are marked as "unavailable"
                 for (String slot : schedule) {
                     // Exclude slots that contain "Unavailable"
-
                     if (!slot.contains("Unavailable")) {
                         availableSlots.add(slot);
                     }
@@ -566,5 +559,4 @@ public class PatientController {
             return null;
         }
     }
-
 }

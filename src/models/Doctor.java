@@ -1,8 +1,8 @@
 package models;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.time.LocalDateTime;
 
 /**
  * Class representing a doctor in the hospital management system.
@@ -12,6 +12,7 @@ public class Doctor extends User {
     private List<String> patientIDs;
     private List<Appointment> appointments;
     private List<LocalDateTime> availability;
+    private List<String> schedule;
 
     /**
      * Constructs a Doctor object.
@@ -25,6 +26,9 @@ public class Doctor extends User {
         this.patientIDs = new ArrayList<>();
         this.appointments = new ArrayList<>();
         this.availability = new ArrayList<>();
+        if ((this.schedule == null) || this.schedule.isEmpty()) {
+            this.schedule = new ArrayList<>();
+        }
     }
 
     // Getters and Setters
@@ -37,7 +41,18 @@ public class Doctor extends User {
         return appointments;
     }
 
-    public List<LocalDateTime> getAvailability() {
-        return availability;
+    // public List<LocalDateTime> getAvailability() {
+    //     return availability;
+    // }
+
+    //Returns the schedule of the doctor
+    public List<String> getSchedule() {
+        
+        return schedule;
+    }
+
+    //Modify the schedule of the doctor
+    public void setSchedule(List<String> schedule) {
+        this.schedule = schedule;
     }
 }

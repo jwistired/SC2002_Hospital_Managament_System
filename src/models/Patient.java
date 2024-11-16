@@ -14,9 +14,9 @@ public class Patient extends User {
      * @param name     The patient's name.
      * @param password The patient's password.
      */
-    public Patient(String userID, String name, String password) {
+    public Patient(String userID, String name, String password, String dateOfBirth, String gender, String bloodType, String email, String contactNo) {
         super(userID, name, password, "Patient");
-        this.medicalRecord = new MedicalRecord(userID, name);
+        this.medicalRecord = new MedicalRecord(userID, name, dateOfBirth, gender,  bloodType, email, contactNo);
     }
 
     /**
@@ -33,7 +33,13 @@ public class Patient extends User {
      *
      * @param medicalRecord The medical record to set.
      */
-    public void setMedicalRecord(MedicalRecord medicalRecord) {
-        this.medicalRecord = medicalRecord;
+    public void setMedicalRecord(String email, String contactNo) {
+        if (this.medicalRecord == null){
+            this.medicalRecord = new MedicalRecord(this.getUserID(), this.getName(), this.getDateOfBirth(), this.getGender(),this.getBloodType(), email, contactNo);
+        } else {
+            // Update existing medical record
+            this.medicalRecord.setEmail(email);
+            this.medicalRecord.setContactNo(contactNo);
+        }
     }
 }

@@ -33,6 +33,7 @@ public class SystemInitializer {
                 initializeAppointments();
             } else {
                 System.out.println("Appointments data already exists. Skipping appointment initialization.");
+
             }
 
             // Check if inventory data file exists
@@ -70,11 +71,12 @@ public class SystemInitializer {
         users.put(pharmacist.getUserID(), pharmacist);
 
         // Add a patient
-        Patient patient = new Patient("patient1", "Jane Doe", "password");
+        Patient patient = new Patient("patient1", "Jane Doe", "password", "1999-10-20", "F", "A", "wongtiji1@gmail.com", "9861235");
+        System.out.println("Initialized patient: " + patient.getMedicalRecord().getDateOfBirth());
         users.put(patient.getUserID(), patient);
 
         // Add another patient
-        Patient patient2 = new Patient("patient2", "John Smith", "password");
+        Patient patient2 = new Patient("patient2", "John Smith", "password", "2001-09-12",  "M", "B", "wong1922@gmail.com", "98271243");
         users.put(patient2.getUserID(), patient2);
 
         SerializationUtil.serialize(users, "users.ser");

@@ -4,6 +4,7 @@ import models.MedicalRecord;
 import models.Appointment;
 import models.AppointmentOutcome;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Scanner;
 
@@ -55,6 +56,11 @@ public class PatientView {
         System.out.println("\nMedical Record:");
         System.out.println("Patient ID: " + record.getPatientID());
         System.out.println("Name: " + record.getName());
+        System.out.println("Date Of Birth : "+ record.getDateOfBirth());
+        System.out.println("Email: " + record.getEmail());
+        System.out.println("Contact Number: " + record.getContactNo());
+        System.out.println("Blood Type: " +  record.getBloodType());
+        
         // Display other details
     }
 
@@ -109,6 +115,15 @@ public class PatientView {
         System.out.print("Enter Appointment Date and Time (YYYY-MM-DD HH:MM): ");
         return scanner.nextLine();
     }
+    /**
+     * Prompts the user to enter the appointment ID and returns the input.
+     * 
+     * @return The appointment ID input by the user.
+     */
+    public String getAppointmentIDInput() {
+        System.out.print("Please enter the Appointment ID you want to cancel: ");
+        return scanner.nextLine().trim(); // Trim to remove any leading or trailing whitespace
+    }
 
     /**
      * Displays a message to the user.
@@ -126,8 +141,10 @@ public class PatientView {
      */
     public void displayScheduledAppointments(List<Appointment> appointments) {
         System.out.println("\nScheduled Appointments:");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         for (Appointment appt : appointments) {
-            System.out.println("Appointment ID: " + appt.getAppointmentID());
+            String dateTime = appt.getDateTime().format(formatter);
+            System.out.println("Appointment ID: " + appt.getAppointmentID() + ", Date and Time: " + dateTime + ", Status: " + appt.getStatus());
             // Display other details
         }
     }
@@ -141,7 +158,10 @@ public class PatientView {
         System.out.println("\nPast Appointment Outcomes:");
         for (AppointmentOutcome outcome : outcomes) {
             System.out.println("Date: " + outcome.getDateOfAppointment());
-            // Display other details
+            System.out.println("Service: " + outcome.getTypeOfService());
+            System.out.println("Prescription: " + outcome.getPrescriptions());
+            System.out.println("Note: " + outcome.getConsultationNotes());
+            System.out.println();
         }
     }
 }

@@ -10,11 +10,13 @@ import java.util.List;
 import models.Appointment;
 import models.AppointmentOutcome;
 import models.Doctor;
+import models.InventoryItem;
 import models.Patient;
 import models.Prescription;
 import models.User;
 import utils.SerializationUtil;
 import views.DoctorView;
+
 
 /**
  * Controller class for handling doctor-related operations.
@@ -24,7 +26,7 @@ public class DoctorController {
     private DoctorView view;
     private List<Appointment> appointments;
     private HashMap<String, Patient> patients;
-    private List<Prescription> availablePrescriptions;
+    private List<InventoryItem> availableMedication;
 
     //private List<String> schedule;
 
@@ -39,6 +41,7 @@ public class DoctorController {
         this.view = view;
         loadAppointments();
         loadPatients();
+        loadInventory();
 
         if (patients != null) {
             view.displayMessage("Patients loaded.");
@@ -99,7 +102,7 @@ public class DoctorController {
      * Initializes the schedule with time slots for the next 7 days. Placeholder for actual implementation.
      */
     private void initializeSchedule() {
-        String[] timeSlots = {"09:00", "10:00", "11:00", "14:00", "15:00"};
+        String[] timeSlots = {"09:00", "10:00", "11:00", "13:00","14:00", "15:00", "16:00"};
         LocalDate date = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         List<String> tempschedule = new ArrayList<>();
@@ -283,7 +286,7 @@ public class DoctorController {
             if (appt.getAppointmentID().equals(appointmentID)) {
                 if (decision.equalsIgnoreCase("A")) {
                     LocalDateTime dateTime = appt.getDateTime();
-                    String formattedDateTimeStr = dateTime.format(formatter) + " Confirmed with" + appt.getPatientID();
+                    String formattedDateTimeStr = dateTime.format(formatter) + " Confirmed with" + patients.get(appt.getPatientID()).getName();
 
                     //Find index of date-time in schedule
                     int index = -1;
@@ -329,17 +332,21 @@ public class DoctorController {
      * Allows the doctor to record the outcome of an appointment.
      */
     private void recordAppointmentOutcome() {
+        int apptIndex = -1;
         String appointmentID = view.getAppointmentIDInput();
+
         for (Appointment appt : appointments) {
             if (appt.getAppointmentID().equals(appointmentID) && appt.getDoctorID().equals(model.getUserID())) {
+                apptIndex = appointments.indexOf(appt);
                 String dateOfAppointment = appt.getDateTime().toString();
                 String typeOfService = view.getDiagnosisInput(); // Reusing method for simplicity
                 String consultationNotes = view.getTreatmentInput(); // Reusing method for simplicity
                 
                 List<Prescription> patientPrescriptions = new ArrayList<>();
                 String prescription = view.addPrescription();
+
+                //Loop to add multiple prescriptions until Doctor decides to stop
                 do {
-                    //Add Prescription until Doctor decides to stop
                     Prescription newPrescription = new Prescription(prescription);
                     patientPrescriptions.add(newPrescription);
                     view.displayMessage(prescription + " added.");
@@ -353,9 +360,10 @@ public class DoctorController {
                 view.displayMessage("Appointment outcome recorded.");
                 break;
             }
-            else{
-                view.displayMessage("Appointment not found.");
-            }
+        }
+
+        if(apptIndex == -1){
+            view.displayMessage("Appointment not found.");
         }
     }
 
@@ -399,4 +407,17 @@ public class DoctorController {
             System.out.println("Error loading patients.");
         }
     }
+
+    /**
+     * Loads inventory from the serialized file.
+     */
+    private void loadInventory() {
+        try {
+            availableMedication = (List<InventoryItem>) SerializationUtil.deserialize("inventory.ser");
+        } catch (Exception e) {
+                view.displayMessage("Error loading inventory.");            
+            }
+        }
+
+
 }

@@ -227,4 +227,10 @@ public class DoctorView {
         System.out.print("Enter the index of the medication: ");
         return Integer.parseInt(scanner.nextLine());
     }
+
+    // Get the quantity of the medication
+    public int getMedicationQuantity() {
+        System.out.print("Enter the quantity: ");
+        return Integer.parseInt(scanner.nextLine());
+    }
 }

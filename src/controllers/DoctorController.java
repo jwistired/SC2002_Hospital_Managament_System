@@ -345,16 +345,16 @@ public class DoctorController {
                 String consultationNotes = view.getTreatmentInput(); // Reusing method for simplicity
                 
                 List<Prescription> patientPrescriptions = new ArrayList<>();
-                // String prescription = view.addPrescription();
                 int choice = -1;
+                int quantity = 0;
 
                 //Loop to add multiple prescriptions until Doctor decides to stop
                 while (choice != 0) {
                     choice = view.getMedications(nameofMedication);
                     if (choice > 0 && choice <= nameofMedication.size()) {
                         String medicationName = nameofMedication.get(choice-1);
+                        quantity = view.getMedicationQuantity();
                         Prescription newPrescription = new Prescription(medicationName);
-                        //Prescription newPrescription = new Prescription(prescription);
                         patientPrescriptions.add(newPrescription);
                         view.displayMessage(medicationName + " added.");
                     } 

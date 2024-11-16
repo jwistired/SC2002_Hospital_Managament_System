@@ -1,18 +1,18 @@
 package controllers;
 
-import models.Patient;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import models.Appointment;
 import models.AppointmentOutcome;
 import models.Doctor;
 import models.MedicalRecord;
-import views.PatientView;
+import models.Patient;
+import models.User;
 import utils.SerializationUtil;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashMap;
+import views.PatientView;
 
 
 /**
@@ -24,7 +24,7 @@ public class PatientController {
     private PatientView view;
     private MedicalRecord record;
     private List<Appointment> appointments;
-    //private HashMap<String, Doctor> doctors;
+    private HashMap<String, Doctor> doctors;
 
 
     /**
@@ -38,6 +38,11 @@ public class PatientController {
         this.view = view;
         loadAppointments();
         loadDoctors();
+
+        //debug print doctors
+        for (Doctor doctor : doctors.values()) {
+            System.out.println(doctor.getUserID());
+        }
     }
 
     /**
@@ -56,7 +61,7 @@ public class PatientController {
                     updatePersonalInfo();
                     break;
                 case 3:
-                    viewAvailableAppointmentSlots(); //Extract Schedule from Doctor 
+                    viewAvailableAppointmentSlots(); 
                     break;
                 case 4:
                     scheduleAppointment();
@@ -105,30 +110,39 @@ public class PatientController {
      * Displays available appointment slots for doctors.
      */
      
-     private void viewAvailableAppointmentSlots() {
+    private void viewAvailableAppointmentSlots() {
         // For simplicity, assume all doctors have the same availability
-        String doctorID = view.getDoctorIDInput(); // Assume this method gets the ID of the selected doctor
-        List<String> slots = doctor.getSchedule(); //To be changed
-        view.displayAvailableSlots(slots);
+        String selectedDoctorID = view.getDoctorIDInput(); // Assume this method gets the ID of the selected doctor
+        Doctor doctor = doctors.get(selectedDoctorID);
+        //List<String> schedule = doctor.getSchedule();
+
+        if (doctor != null) {
+            List<String> schedule = loadSchedule(selectedDoctorID);
+            for (String slot : schedule) {
+                System.out.println(slot);
+            }
+        } else {
+            System.out.println("Doctor not found. Please try again.");
+        }
     }
         
 
     /**
  * Retrieves available appointment slots for a specific doctor.
  */
-    private List<String> getAvailableAppointmentSlots(String doctorID) {
-        List<String> slots = doctor.getSchedule();
+    // private List<String> getAvailableAppointmentSlots(String doctorID) {
+    //     List<String> slots = doctor.getSchedule();
 
-        // Filter out slots that are already taken
-        for (Appointment appt : appointments) {
-            if (appt.getDoctorID().equals(doctorID)) {
-                String bookedSlot = appt.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-                slots.remove(bookedSlot);
-            }
-        }
+    //     // Filter out slots that are already taken
+    //     for (Appointment appt : appointments) {
+    //         if (appt.getDoctorID().equals(doctorID)) {
+    //             String bookedSlot = appt.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+    //             slots.remove(bookedSlot);
+    //         }
+    //     }
 
-        return slots;
-    } /* 
+    //     return slots;
+    // } /* 
 
     /**
      * Generates available appointment slots for the next 15 days.
@@ -178,35 +192,53 @@ public class PatientController {
      * Allows the patient to schedule an appointment.
      */
     private void scheduleAppointment() {
-        String doctorID = view.getDoctorIDInput(); //Instead of DoctorID, maybe we should ask for the Doctor's name? Print out the list of Doctors?
-        String dateTimeStr = view.getAppointmentDateTime();
-        LocalDateTime dateTime; 
-        List<String> slots = getAvailableAppointmentSlots(doctorID);
-        String formattedDateTime;
+        String doctorID = view.getDoctorIDInput(); // Instead of DoctorID, maybe we should ask for the Doctor's name? Print out the list of Doctors?
+        assignDoctor(doctorID);
 
-        try{
-            dateTime = LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")); 
-            formattedDateTime = dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")); //Include try and exception handling
+        if (doctor == null) {
+            view.displayMessage("Doctor not found. Please try again.");
+            return;
+        }
+
+        List<String> slots = getDoctorSchedule(doctorID);
+        view.displayAvailableSlots(slots);
+
+        String dateTimeStr = view.getAppointmentDateTime();
+        LocalDateTime dateTime;
+
+        try {
+            dateTime = LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            String formattedDateTime = dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
 
             if (!slots.contains(formattedDateTime)) {
                 view.displayMessage("The selected slot is not available. Please choose a different time.");
                 return;
             }
-        
+
+            // Check if the user already has an appointment for the same time
+            for (Appointment existingAppointment : appointments) {
+                if (existingAppointment.getPatientID().equals(model.getUserID()) && 
+                    existingAppointment.getDateTime().equals(dateTime)) {
+                    view.displayMessage("You have an existing appointment request that is currently being processed on the same day and time. Please check if the appointment has gone through using the view Scheduled Appointment.");
+                    return;
+                }
+            }
+
             Appointment appointment = new Appointment(
                     "APT" + System.currentTimeMillis(),
                     model.getUserID(),
                     doctorID,
                     dateTime
             );
+
             appointment.setStatus("pending");
             appointments.add(appointment);
             saveAppointments();
             slots.remove(formattedDateTime);
             view.displayMessage("Appointment scheduled successfully.");
-            } catch (Exception e){
-                view.displayMessage("Invalid date and time. Please enter a valid date and time.");
-            }
+        } catch (Exception e) {
+            view.displayMessage("Invalid date and time. Please enter a valid date and time.");
+        }
         }
 
     /**
@@ -253,13 +285,21 @@ public class PatientController {
         }
     
         String doctorID = appointmentToReschedule.getDoctorID();
-        List<String> availableSlots = getAvailableAppointmentSlots(doctorID);
+        List<String> availableSlots = getDoctorSchedule(doctorID);
     
         // Check if the new date and time is available
         String formattedNewDateTime = newDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         if (!availableSlots.contains(formattedNewDateTime)) {
             view.displayMessage("The selected time slot is not available. Please choose a different time.");
             return;
+        }
+
+        for (Appointment existingAppointment : appointments) {
+            if (existingAppointment.getPatientID().equals(model.getUserID()) && 
+                existingAppointment.getDateTime().equals(newDateTime)) {
+                view.displayMessage("You have an existing appointment request that is currently being processed on the same day and time. Please check if the appointment has gone through using the view Scheduled Appointment.");
+                return;
+            }
         }
     
         // Add the old appointment time back to available slots
@@ -307,10 +347,10 @@ public class PatientController {
         String canceledSlot = appointmentToCancel.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
 
         // Add the canceled appointment slot back to available slots
-        List<String> availableSlots = getAvailableAppointmentSlots(doctorID);
+        List<String> availableSlots = getDoctorSchedule(doctorID);
         if (!availableSlots.contains(canceledSlot)) {
-            availableSlots.add(canceledSlot);
-            }
+           availableSlots.add(canceledSlot);
+           }
 
         // Update appointment status and remove it from the list
         appointmentToCancel.setStatus("canceled");
@@ -345,9 +385,11 @@ public class PatientController {
 
         // Loop through appointments to find past ones
         for (Appointment appointment : appointments) {
-            if (appointment.getPatientID().equals(model.getUserID()) && appointment.getDateTime().isBefore(now)) {
+            if (appointment.getPatientID().equals(model.getUserID())) {
                 // Assuming getOutcome() returns an AppointmentOutcome or a string
-                pastOutcomes.add(appointment.getOutcome());
+                if (appointment.getOutcome() != null){
+                    pastOutcomes.add(appointment.getOutcome());
+                }
             }
         }
 
@@ -389,9 +431,86 @@ public class PatientController {
      */
     private void loadDoctors() {
         try {
-            doctors = (HashMap<String, Doctor>) SerializationUtil.deserialize("doctors.ser");
-        } catch (Exception e) {
             doctors = new HashMap<>();
+            HashMap<String, User> users = (HashMap<String, User>) SerializationUtil.deserialize("users.ser");
+            for (User user : users.values()) {
+                if (user.getRole().equals("Doctor")) {
+                    doctors.put(user.getUserID(), (Doctor) user);
+                }
+            }
+            
+        } catch (Exception e) {
+            System.out.println("Error loading Doctors.");
         }
     }
+
+    /**
+     * Loads the schedule from a serialized file.
+     */    
+    private List<String> loadSchedule(String docid) {
+        List<String> schedule = new ArrayList<>();
+        try {
+            String fileName = "Schedule_" + docid + ".ser";
+            // Load schedule from serialized file
+            schedule = ((List<String>) SerializationUtil.deserialize(fileName));
+        } catch (Exception e) {
+            System.out.println("Error loading schedule: " + e.getMessage());
+        }
+        return schedule;
+    }
+
+    public List<String> getDoctorSchedule(String doctorID) {
+        try {
+            String fileName = "Schedule_" + doctorID + ".ser";
+            // Deserialize the schedule
+            List<String> schedule = (List<String>) SerializationUtil.deserialize(fileName);
+            
+            // Filter out the slots that are marked as "unavailable"
+            List<String> availableSlots = new ArrayList<>();
+            if (schedule != null) {
+                for (String slot : schedule) {
+                    // Exclude slots that contain "unavailable"
+                    if (!slot.contains("Unavailable")) {
+                        availableSlots.add(slot);
+                    }
+                }
+            }
+    
+            return availableSlots;
+        } catch (Exception e) {
+            System.out.println("Error loading schedule for doctor with ID: " + doctorID);
+            return null;
+        }
+    }
+
+
+     /**
+     * Assigns a doctor to the current instance based on the given doctor ID.
+     * 
+     * This method deserializes the "users.ser" file, searches for a Doctor object 
+     * whose userID matches the provided doctorID, and assigns it to the `this.doctor` field.
+     * If no matching doctor is found, it throws an exception.
+     * 
+     * @param doctorID The unique ID of the doctor to be assigned.
+     * @throws IllegalStateException if no doctor with the given ID is found.
+     * @throws Exception if deserialization fails or if the file is not found.
+     */
+    private void assignDoctor(String doctorID) {
+        if (doctors == null || doctors.isEmpty()) {
+            loadDoctors();  // Load the doctor data if not already loaded
+        }
+    
+        // Attempt to find the doctor in the doctors map by ID
+        Doctor assignedDoctor = doctors.get(doctorID);
+    
+        // If the doctor is found, assign them; otherwise, show an error message
+        if (assignedDoctor != null) {
+            this.doctor = assignedDoctor;  // Assign the doctor to this patient
+            view.displayMessage("Doctor " + assignedDoctor.getName() + " has been successfully assigned.");
+        } else {
+            // If no doctor found with the given ID, show an error message
+            view.displayMessage("Error: Doctor with ID " + doctorID + " not found. Please try again.");
+        }
+    }
+
 }

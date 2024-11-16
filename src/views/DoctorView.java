@@ -217,4 +217,20 @@ public class DoctorView {
     public void displayMessage(String message) {
         System.out.println(message);
     }
+
+    // Display list of available medications
+    public int getMedications(List<String> medications) {
+        System.out.println("\nMedication Inventory:");
+        for (int i = 0; i < medications.size(); i++) {
+            System.out.println((i+1) + ") " + medications.get(i));
+        }
+        System.out.print("Enter the index of the medication: ");
+        return Integer.parseInt(scanner.nextLine());
+    }
+
+    // Get the quantity of the medication
+    public int getMedicationQuantity() {
+        System.out.print("Enter the quantity: ");
+        return Integer.parseInt(scanner.nextLine());
+    }
 }

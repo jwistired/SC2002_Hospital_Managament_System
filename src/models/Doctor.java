@@ -41,9 +41,6 @@ public class Doctor extends User {
         return appointments;
     }
 
-    // public List<LocalDateTime> getAvailability() {
-    //     return availability;
-    // }
 
     //Returns the schedule of the doctor
     public List<String> getSchedule() {

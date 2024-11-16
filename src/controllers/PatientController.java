@@ -134,52 +134,6 @@ public class PatientController {
         System.out.println();
     }
     }
-        
-
-    /**
- * Retrieves available appointment slots for a specific doctor.
- */
-    // private List<String> getAvailableAppointmentSlots(String doctorID) {
-    //     List<String> slots = doctor.getSchedule();
-
-    //     // Filter out slots that are already taken
-    //     for (Appointment appt : appointments) {
-    //         if (appt.getDoctorID().equals(doctorID)) {
-    //             String bookedSlot = appt.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-    //             slots.remove(bookedSlot);
-    //         }
-    //     }
-
-    //     return slots;
-    // } /* 
-
-    /**
-     * Generates available appointment slots for the next 15 days.
-     *
-     * @return List of available appointment slots formatted as "yyyy-MM-dd HH:mm".
-     */
-    /*private List<String> generateAvailableAppointmentSlots() {
-        List<String> availableSlots = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-        String[] timeSlots = {"09:00", "10:00", "11:00", "14:00", "15:00", "16:00"};
-
-        // Loop through the next 15 days
-        for (int i = 0; i < 15; i++) {
-            // Calculate the date for the current day
-            LocalDateTime date = now.plusDays(i);
-            String dateString = date.toLocalDate().toString(); // Get the date in yyyy-MM-dd format
-
-            // Loop through each time slot
-            for (String time : timeSlots) {
-                // Combine the date and time into a single string
-                String slot = dateString + " " + time;
-                availableSlots.add(slot);
-            }
-        }
-
-        return availableSlots;
-    }
-    */    
 
     /**
      * Retrieves a list of appointments scheduled for the patient.
@@ -295,8 +249,6 @@ public class PatientController {
      */
     private void rescheduleAppointment() {
         
-
-
         List<Appointment> patientAppointments = new ArrayList<>();
         for (Appointment appt : appointments) {
             if (appt.getPatientID().equals(model.getUserID())) {
@@ -399,6 +351,7 @@ public class PatientController {
         
         view.displayMessage("Appointment rescheduled successfully.");
     }
+    }
 
     /**
      * Allows the patient to cancel an appointment.
@@ -466,9 +419,9 @@ public class PatientController {
                 // Assuming getOutcome() returns an AppointmentOutcome or a string
                 if (appointment.getOutcome() != null){
                     pastOutcomes.add(appointment.getOutcome());
-                }
             }
         }
+    }
 
         if (pastOutcomes.isEmpty()) {
             view.displayMessage("No past appointment outcomes found.");
@@ -476,6 +429,8 @@ public class PatientController {
             view.displayPastAppointmentOutcomes(pastOutcomes); // Method in PatientView to display outcomes
         }
     }
+
+
 
     /**
      * Saves the patient model to the serialized file.
@@ -568,3 +523,5 @@ public class PatientController {
     }
 
 }
+
+

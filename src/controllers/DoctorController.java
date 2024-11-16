@@ -27,6 +27,7 @@ public class DoctorController {
     private List<Appointment> appointments;
     private HashMap<String, Patient> patients;
     private List<InventoryItem> availableMedication;
+    private List<String> nameofMedication;
 
     //private List<String> schedule;
 
@@ -42,6 +43,7 @@ public class DoctorController {
         loadAppointments();
         loadPatients();
         loadInventory();
+        loadtoList();
 
         if (patients != null) {
             view.displayMessage("Patients loaded.");
@@ -343,15 +345,26 @@ public class DoctorController {
                 String consultationNotes = view.getTreatmentInput(); // Reusing method for simplicity
                 
                 List<Prescription> patientPrescriptions = new ArrayList<>();
-                String prescription = view.addPrescription();
+                // String prescription = view.addPrescription();
+                int choice = -1;
 
                 //Loop to add multiple prescriptions until Doctor decides to stop
-                do {
-                    Prescription newPrescription = new Prescription(prescription);
-                    patientPrescriptions.add(newPrescription);
-                    view.displayMessage(prescription + " added.");
-                    prescription = view.addPrescription();
-                } while (view.addPrescription().equalsIgnoreCase("X"));
+                while (choice != 0) {
+                    choice = view.getMedications(nameofMedication);
+                    if (choice > 0 && choice <= nameofMedication.size()) {
+                        String medicationName = nameofMedication.get(choice-1);
+                        Prescription newPrescription = new Prescription(medicationName);
+                        //Prescription newPrescription = new Prescription(prescription);
+                        patientPrescriptions.add(newPrescription);
+                        view.displayMessage(medicationName + " added.");
+                    } 
+                    else if (choice == 0) {
+                        break;
+                    }
+                    else{
+                        view.displayMessage("Invalid choice. Please try again.");
+                    }
+                }
 
                 AppointmentOutcome outcome = new AppointmentOutcome(dateOfAppointment, typeOfService, patientPrescriptions, consultationNotes);
                 appt.setOutcome(outcome);
@@ -412,12 +425,21 @@ public class DoctorController {
      * Loads inventory from the serialized file.
      */
     private void loadInventory() {
-        try {
-            availableMedication = (List<InventoryItem>) SerializationUtil.deserialize("inventory.ser");
-        } catch (Exception e) {
-                view.displayMessage("Error loading inventory.");            
-            }
+            try {
+                availableMedication = (List<InventoryItem>) SerializationUtil.deserialize("inventory.ser");
+            } catch (Exception e) {
+                    view.displayMessage("Error loading inventory.");            
+                }
         }
-
+    
+    /**
+     * Saves medicine names to a list.
+     */
+    private void loadtoList(){
+        nameofMedication = new ArrayList<>();
+        for (InventoryItem item : availableMedication) {
+            nameofMedication.add(item.getMedicationName());            
+        }
+    }
 
 }

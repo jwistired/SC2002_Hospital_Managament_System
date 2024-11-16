@@ -134,52 +134,6 @@ public class PatientController {
     }
     }
         
-
-    /**
- * Retrieves available appointment slots for a specific doctor.
- */
-    // private List<String> getAvailableAppointmentSlots(String doctorID) {
-    //     List<String> slots = doctor.getSchedule();
-
-    //     // Filter out slots that are already taken
-    //     for (Appointment appt : appointments) {
-    //         if (appt.getDoctorID().equals(doctorID)) {
-    //             String bookedSlot = appt.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-    //             slots.remove(bookedSlot);
-    //         }
-    //     }
-
-    //     return slots;
-    // } /* 
-
-    /**
-     * Generates available appointment slots for the next 15 days.
-     *
-     * @return List of available appointment slots formatted as "yyyy-MM-dd HH:mm".
-     */
-    /*private List<String> generateAvailableAppointmentSlots() {
-        List<String> availableSlots = new ArrayList<>();
-        LocalDateTime now = LocalDateTime.now();
-        String[] timeSlots = {"09:00", "10:00", "11:00", "14:00", "15:00", "16:00"};
-
-        // Loop through the next 15 days
-        for (int i = 0; i < 15; i++) {
-            // Calculate the date for the current day
-            LocalDateTime date = now.plusDays(i);
-            String dateString = date.toLocalDate().toString(); // Get the date in yyyy-MM-dd format
-
-            // Loop through each time slot
-            for (String time : timeSlots) {
-                // Combine the date and time into a single string
-                String slot = dateString + " " + time;
-                availableSlots.add(slot);
-            }
-        }
-
-        return availableSlots;
-    }
-    */    
-
     /**
      * Retrieves a list of appointments scheduled for the patient.
      *
@@ -533,6 +487,12 @@ public class PatientController {
         return schedule;
     }
 
+    /**
+     * Gets the doctor's schedule for display.
+     *
+     * @param doctorID The ID of the doctor.
+     * @return The list of available slots for the doctor.
+     */
     public List<String> getDoctorSchedule(String doctorID) {
         try {
             String fileName = "Schedule_" + doctorID + ".ser";

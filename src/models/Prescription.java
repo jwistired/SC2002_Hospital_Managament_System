@@ -17,7 +17,7 @@ public class Prescription implements Serializable {
      * @param medicationName The name of the medication.
      * @param quantity
      */
-    public Prescription(String medicationName) {
+    public Prescription(String medicationName, int quantity) {
         this.medicationName = medicationName;
         this.quantity = quantity;
         this.status = "pending";

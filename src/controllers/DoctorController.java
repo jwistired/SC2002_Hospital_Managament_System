@@ -332,6 +332,10 @@ public class DoctorController {
 
     /**
      * Allows the doctor to record the outcome of an appointment.
+     * 
+     * @param nameofMedication List of medication names
+     * @param appointmentID The appointment ID
+     *
      */
     private void recordAppointmentOutcome() {
         int apptIndex = -1;
@@ -354,7 +358,7 @@ public class DoctorController {
                     if (choice > 0 && choice <= nameofMedication.size()) {
                         String medicationName = nameofMedication.get(choice-1);
                         quantity = view.getMedicationQuantity();
-                        Prescription newPrescription = new Prescription(medicationName);
+                        Prescription newPrescription = new Prescription(medicationName, quantity);
                         patientPrescriptions.add(newPrescription);
                         view.displayMessage(medicationName + " added.");
                     } 

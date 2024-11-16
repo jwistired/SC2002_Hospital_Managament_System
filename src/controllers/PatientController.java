@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import models.Appointment;
 import models.AppointmentOutcome;
 import models.Doctor;
@@ -134,6 +133,52 @@ public class PatientController {
         System.out.println();
     }
     }
+        
+
+    /**
+ * Retrieves available appointment slots for a specific doctor.
+ */
+    // private List<String> getAvailableAppointmentSlots(String doctorID) {
+    //     List<String> slots = doctor.getSchedule();
+
+    //     // Filter out slots that are already taken
+    //     for (Appointment appt : appointments) {
+    //         if (appt.getDoctorID().equals(doctorID)) {
+    //             String bookedSlot = appt.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+    //             slots.remove(bookedSlot);
+    //         }
+    //     }
+
+    //     return slots;
+    // } /* 
+
+    /**
+     * Generates available appointment slots for the next 15 days.
+     *
+     * @return List of available appointment slots formatted as "yyyy-MM-dd HH:mm".
+     */
+    /*private List<String> generateAvailableAppointmentSlots() {
+        List<String> availableSlots = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+        String[] timeSlots = {"09:00", "10:00", "11:00", "14:00", "15:00", "16:00"};
+
+        // Loop through the next 15 days
+        for (int i = 0; i < 15; i++) {
+            // Calculate the date for the current day
+            LocalDateTime date = now.plusDays(i);
+            String dateString = date.toLocalDate().toString(); // Get the date in yyyy-MM-dd format
+
+            // Loop through each time slot
+            for (String time : timeSlots) {
+                // Combine the date and time into a single string
+                String slot = dateString + " " + time;
+                availableSlots.add(slot);
+            }
+        }
+
+        return availableSlots;
+    }
+    */    
 
     /**
      * Retrieves a list of appointments scheduled for the patient.
@@ -155,7 +200,7 @@ public class PatientController {
      * Allows the patient to schedule an appointment.
      */
     private void scheduleAppointment() {
-   
+        
         // Step 1: Show all available appointment slots for all doctors
         System.out.println("All available appointment slots:");
         Map<String, List<String>> doctorSlots = new HashMap<>();
@@ -206,13 +251,11 @@ public class PatientController {
 
             // Step 6: Check if the selected slot is available
             if (!availableSlots.contains(formattedDateTime)) {
-
                 view.displayMessage("The selected slot is not available. Please choose a different time.");
                 return;
             }
 
             // Step 7: Check if the user already has an appointment for the same time
-
             for (Appointment existingAppointment : appointments) {
                 if (existingAppointment.getPatientID().equals(model.getUserID()) && 
                     existingAppointment.getDateTime().equals(dateTime)) {
@@ -220,7 +263,6 @@ public class PatientController {
                     return;
                 }
             }
-
 
             // Step 8: Create a new appointment for the selected time slot
             Appointment appointment = new Appointment(
@@ -237,7 +279,6 @@ public class PatientController {
             // Remove the booked slot from the available slots
             availableSlots.remove(formattedDateTime);
 
-
             view.displayMessage("Appointment scheduled successfully.");
         } catch (Exception e) {
             view.displayMessage("Invalid date and time. Please enter a valid date and time.");
@@ -249,6 +290,7 @@ public class PatientController {
      */
     private void rescheduleAppointment() {
         
+        // Step 1: Fetch all appointments for the patient
         List<Appointment> patientAppointments = new ArrayList<>();
         for (Appointment appt : appointments) {
             if (appt.getPatientID().equals(model.getUserID())) {
@@ -266,7 +308,6 @@ public class PatientController {
         String appointmentID = view.getAppointmentIDInput(); // User inputs the appointment ID they want to reschedule
 
         // Step 3: Find the appointment to reschedule
-
         Appointment appointmentToReschedule = null;
         for (Appointment appt : patientAppointments) {
             if (appt.getAppointmentID().equals(appointmentID)) {
@@ -278,6 +319,7 @@ public class PatientController {
         if (appointmentToReschedule == null) {
             view.displayMessage("Appointment ID not found. Please try again.");
             return;
+        }
 
         // Step 4: Show available slots across all doctors
         Map<String, List<String>> doctorSlots = new HashMap<>();
@@ -351,7 +393,6 @@ public class PatientController {
         
         view.displayMessage("Appointment rescheduled successfully.");
     }
-    }
 
     /**
      * Allows the patient to cancel an appointment.
@@ -419,9 +460,9 @@ public class PatientController {
                 // Assuming getOutcome() returns an AppointmentOutcome or a string
                 if (appointment.getOutcome() != null){
                     pastOutcomes.add(appointment.getOutcome());
+                }
             }
         }
-    }
 
         if (pastOutcomes.isEmpty()) {
             view.displayMessage("No past appointment outcomes found.");
@@ -429,8 +470,6 @@ public class PatientController {
             view.displayPastAppointmentOutcomes(pastOutcomes); // Method in PatientView to display outcomes
         }
     }
-
-
 
     /**
      * Saves the patient model to the serialized file.
@@ -508,7 +547,6 @@ public class PatientController {
                 // Filter out the slots that are marked as "unavailable"
                 for (String slot : schedule) {
                     // Exclude slots that contain "Unavailable"
-
                     if (!slot.contains("Unavailable")) {
                         availableSlots.add(slot);
                     }
@@ -521,7 +559,4 @@ public class PatientController {
             return null;
         }
     }
-
 }
-
-

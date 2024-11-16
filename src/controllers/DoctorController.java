@@ -11,6 +11,7 @@ import models.Appointment;
 import models.AppointmentOutcome;
 import models.Doctor;
 import models.Patient;
+import models.Prescription;
 import models.User;
 import utils.SerializationUtil;
 import views.DoctorView;
@@ -23,6 +24,7 @@ public class DoctorController {
     private DoctorView view;
     private List<Appointment> appointments;
     private HashMap<String, Patient> patients;
+    private List<Prescription> availablePrescriptions;
 
     //private List<String> schedule;
 
@@ -38,16 +40,12 @@ public class DoctorController {
         loadAppointments();
         loadPatients();
 
-        //debug loadPatients()
-        if (patients.isEmpty()) {
-            System.out.println("No patients found.");
-        } else {
-            for (Patient patient : patients.values()) {
-                System.out.println(patient.getName());
-            }
+        if (patients != null) {
+            view.displayMessage("Patients loaded.");
         }
 
-        if ((this.model.getSchedule() == null) || this.model.getSchedule().isEmpty()) {
+        if (this.model.getSchedule() == null) {
+            view.displayMessage("Schedule Missing. Initializing...");
             initializeSchedule();
             saveSchedule();
             view.displayMessage("Schedule initialized.");
@@ -114,6 +112,7 @@ public class DoctorController {
             }
         }
         model.setSchedule(tempschedule);
+        view.displayMessage("Schedule initialized.");
     }
 
     /**
@@ -137,7 +136,7 @@ public class DoctorController {
             //Load schedule from serialized file
             model.setSchedule((List<String>) SerializationUtil.deserialize(fileName));
         } catch (Exception e) {
-            initializeSchedule();
+            view.displayMessage("Error loading schedule.");
         }
     }
 
@@ -246,7 +245,36 @@ public class DoctorController {
         //Display list of pending appointments
         List<String> schedule = model.getSchedule();
         view.displayAppointmentRequests(pendingAppointments);
-        String appointmentID = view.getAppointmentIDInput();
+
+        //Check if there are any pending appointments
+        if (pendingAppointments.isEmpty()) {
+            view.displayMessage("No pending appointments.");
+            return;
+        }
+        
+        //check for valid appointment ID
+        boolean validAppointmentID = false;
+        String appointmentID = "";
+        while (!validAppointmentID) {
+            appointmentID = view.getAppointmentIDInput();
+            for (Appointment appt : pendingAppointments) {
+                if (appt.getAppointmentID().equals(appointmentID)) {
+                    validAppointmentID = true;
+                    break;
+                }
+            }
+            if (!validAppointmentID) {
+                view.displayMessage("Invalid appointment ID. Please try again.");
+                return;
+            }
+        }
+        
+        //Display Apt with Patient Name and Date
+        for (Appointment appt : pendingAppointments) {
+            view.displayMessage("Appointment ID: " + appt.getAppointmentID() + " with " + patients.get(appt.getPatientID()).getName() + " on " + appt.getDateTime());
+        }
+
+        //Get appointment ID and decision from user
         String decision = view.getDecisionInput();
 
         //Update appointment status
@@ -307,8 +335,18 @@ public class DoctorController {
                 String dateOfAppointment = appt.getDateTime().toString();
                 String typeOfService = view.getDiagnosisInput(); // Reusing method for simplicity
                 String consultationNotes = view.getTreatmentInput(); // Reusing method for simplicity
-                AppointmentOutcome outcome = new AppointmentOutcome(dateOfAppointment, typeOfService, new ArrayList<>(),
-                        consultationNotes);
+                
+                List<Prescription> patientPrescriptions = new ArrayList<>();
+                String prescription = view.addPrescription();
+                do {
+                    //Add Prescription until Doctor decides to stop
+                    Prescription newPrescription = new Prescription(prescription);
+                    patientPrescriptions.add(newPrescription);
+                    view.displayMessage(prescription + " added.");
+                    prescription = view.addPrescription();
+                } while (view.addPrescription().equalsIgnoreCase("X"));
+
+                AppointmentOutcome outcome = new AppointmentOutcome(dateOfAppointment, typeOfService, patientPrescriptions, consultationNotes);
                 appt.setOutcome(outcome);
                 appt.setStatus("completed");
                 saveAppointments();
@@ -328,7 +366,7 @@ public class DoctorController {
         try {
             appointments = (List<Appointment>) SerializationUtil.deserialize("appointments.ser");
         } catch (Exception e) {
-            appointments = new ArrayList<>();
+            view.displayMessage("Error loading appointments.");
         }
     }
 
@@ -361,5 +399,4 @@ public class DoctorController {
             System.out.println("Error loading patients.");
         }
     }
-
 }

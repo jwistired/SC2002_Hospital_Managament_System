@@ -161,6 +161,7 @@ public class PatientView {
             System.out.println("Service: " + outcome.getTypeOfService());
             System.out.println("Prescription: " + outcome.getPrescriptions());
             System.out.println("Note: " + outcome.getConsultationNotes());
+            System.out.println();
         }
     }
 }

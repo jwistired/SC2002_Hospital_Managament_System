@@ -49,6 +49,7 @@ public class PharmacistView {
         System.out.println("\nPrescriptions:");
         for (Prescription presc : prescriptions) {
             System.out.println("Medication Name: " + presc.getMedicationName());
+            System.out.println("Quantity: " + presc.getQuantity());
             System.out.println("Status: " + presc.getStatus());
             System.out.println("-----------------------");
         }

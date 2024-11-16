@@ -75,6 +75,7 @@ public class PharmacistController {
      */
     private void updatePrescriptionStatus() {
         String medicationName = view.getMedicationNameInput();
+        int quantity = view.getQuantityInput();
         boolean found = false;
 
         for (Appointment appt : appointments) {
@@ -82,10 +83,20 @@ public class PharmacistController {
             if (outcome != null) {
                 List<Prescription> prescriptions = outcome.getPrescriptions();
                 for (Prescription presc : prescriptions) {
-                    if (presc.getMedicationName().equalsIgnoreCase(medicationName) && !presc.getStatus().equals("dispensed")) {
-                        presc.setStatus("dispensed");
-                        found = true;
-                        break;
+                    if (presc.getMedicationName().equalsIgnoreCase(medicationName) && presc.getQuantity() == quantity && !presc.getStatus().equals("dispensed")) {
+                        for (InventoryItem item : inventory){
+                            if (item.getStockLevel() >= quantity)
+                            {
+                                item.setStockLevel(item.getStockLevel() - quantity);
+                                presc.setStatus("dispensed");
+                                saveInventory();
+                                found = true;
+                                break;
+                            }
+                            else{
+                                view.displayMessage("Insufficient stock for " + medicationName + ".");
+                            }
+                        }    
                     }
                 }
             }
@@ -93,7 +104,7 @@ public class PharmacistController {
 
         if (found) {
             saveAppointments();
-            view.displayMessage("Prescription status updated.");
+            view.displayMessage("Prescribed " + quantity + "units of " + medicationName + ". Status Updated to 'dispensed'.");
         } else {
             view.displayMessage("Prescription not found or already dispensed.");
         }

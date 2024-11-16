@@ -21,6 +21,7 @@ public class AdminController {
     private HashMap<String, User> users;
     private List<Appointment> appointments;
     private List<InventoryItem> inventory;
+    private HashMap<String, Doctor> doctors; // To manage doctor-specific operations
 
     /**
      * Constructs an AdminController object.
@@ -34,6 +35,7 @@ public class AdminController {
         loadUsers();
         loadAppointments();
         loadInventory();
+        loadDoctors(); // Initialize doctors map
     }
 
     /**
@@ -52,10 +54,10 @@ public class AdminController {
                     viewAppointmentDetails();
                     break;
                 case 3:
-                    manageMedicationInventory();
+                    manageMedicationInventoryAndReplenishment();
                     break;
                 case 4:
-                    approveReplenishmentRequests();
+                    viewDoctorSchedulesMenu(); // New menu option
                     break;
                 case 5:
                     view.displayMessage("Logging out...");
@@ -64,6 +66,83 @@ public class AdminController {
                     view.displayMessage("Invalid choice. Please try again.");
             }
         } while (choice != 5);
+    }
+
+    /**
+     * Loads doctors from the users map.
+     */
+    @SuppressWarnings("unchecked")
+    private void loadDoctors() {
+        doctors = new HashMap<>();
+        for (User user : users.values()) {
+            if (user instanceof Doctor) {
+                doctors.put(user.getUserID(), (Doctor) user);
+            }
+        }
+    }
+
+    /**
+     * Displays the doctor schedules menu.
+     */
+    private void viewDoctorSchedulesMenu() {
+        int choice;
+        do {
+            view.displayDoctorScheduleMenu();
+            choice = view.getUserChoice();
+            switch (choice) {
+                case 1:
+                    viewAllDoctorSchedule();
+                    break;
+                case 2:
+                    String doctorID = view.getDoctorIDInput();
+                    viewIndividualDoctorSchedule(doctorID);
+                    break;
+                case 3:
+                    view.displayMessage("Returning to main menu...");
+                    break;
+                default:
+                    view.displayMessage("Invalid choice. Please try again.");
+            }
+        } while (choice != 3);
+    }
+
+    /**
+     * Displays the schedules of all doctors.
+     */
+    public void viewAllDoctorSchedule() {
+        if (doctors.isEmpty()) {
+            view.displayMessage("No doctors found in the system.");
+            return;
+        }
+
+        for (String doctorID : doctors.keySet()) {
+            view.displayMessage("--------------------------------------------------");
+            view.displayMessage("Doctor ID: " + doctorID);
+            viewIndividualDoctorSchedule(doctorID);
+            view.displayMessage("--------------------------------------------------\n");
+        }
+    }
+
+    /**
+     * Displays the schedule of an individual doctor.
+     *
+     * @param doctorID The ID of the doctor whose schedule is to be viewed.
+     */
+    public void viewIndividualDoctorSchedule(String doctorID) {
+        Doctor doctor = doctors.get(doctorID);
+        if (doctor == null) {
+            view.displayMessage("Doctor with ID " + doctorID + " not found.");
+            return;
+        }
+
+        List<String> schedule = doctor.getSchedule();
+        if (schedule == null || schedule.isEmpty()) {
+            view.displayMessage("No schedule available for Dr. " + doctor.getName() + ".");
+            return;
+        }
+
+        view.displayMessage("Schedule for Dr. " + doctor.getName() + " (ID: " + doctorID + "):");
+        view.displayDoctorSchedule(schedule, appointments, doctorID);
     }
 
     /**
@@ -85,12 +164,26 @@ public class AdminController {
                     removeStaffMember();
                     break;
                 case 4:
+                    viewStaffMembers();
+                    break;
+                case 5:
                     view.displayMessage("Returning to main menu...");
                     break;
                 default:
                     view.displayMessage("Invalid choice. Please try again.");
             }
-        } while (choice != 4);
+        } while (choice != 5);
+    }
+
+    /**
+     * Displays a list of all staff members.
+     */
+    private void viewStaffMembers() {
+        if (users.isEmpty()) {
+            view.displayMessage("No staff members found.");
+            return;
+        }
+        view.displayStaffList(new ArrayList<>(users.values()));
     }
 
     /**
@@ -102,6 +195,11 @@ public class AdminController {
         String password = view.getPasswordInput();
         String role = view.getRoleInput();
 
+        if (users.containsKey(userID)) {
+            view.displayMessage("User ID already exists. Please try a different ID.");
+            return;
+        }
+
         User newUser = null;
         if (role.equalsIgnoreCase("Doctor")) {
             newUser = new Doctor(userID, name, password);
@@ -112,9 +210,10 @@ public class AdminController {
         if (newUser != null) {
             users.put(userID, newUser);
             saveUsers();
+            loadDoctors(); // Update doctors map if a doctor was added
             view.displayMessage("Staff member added.");
         } else {
-            view.displayMessage("Invalid role.");
+            view.displayMessage("Invalid role. Only 'Doctor' and 'Pharmacist' roles are allowed.");
         }
     }
 
@@ -122,7 +221,32 @@ public class AdminController {
      * Updates an existing staff member.
      */
     private void updateStaffMember() {
-        // Implementation for updating a staff member
+        String userID = view.getUserIDInput();
+        if (!users.containsKey(userID)) {
+            view.displayMessage("User ID not found.");
+            return;
+        }
+
+        User oldUser = users.get(userID);
+        String newName = view.getNameInput();
+        String newPassword = view.getPasswordInput();
+
+        // Create a new User object with updated details
+        User updatedUser = null;
+        if (oldUser instanceof Doctor) {
+            updatedUser = new Doctor(userID, newName, newPassword);
+        } else if (oldUser instanceof Pharmacist) {
+            updatedUser = new Pharmacist(userID, newName, newPassword);
+        } else {
+            view.displayMessage("Unknown user role. Cannot update.");
+            return;
+        }
+
+        // Replace the old user with the updated user
+        users.put(userID, updatedUser);
+        saveUsers();
+        loadDoctors(); // Update doctors map if a doctor was updated
+        view.displayMessage("Staff member updated successfully.");
     }
 
     /**
@@ -133,6 +257,7 @@ public class AdminController {
         if (users.containsKey(userID)) {
             users.remove(userID);
             saveUsers();
+            loadDoctors(); // Update doctors map if a doctor was removed
             view.displayMessage("Staff member removed.");
         } else {
             view.displayMessage("User ID not found.");
@@ -140,75 +265,167 @@ public class AdminController {
     }
 
     /**
+     * Manages medication inventory and approves replenishment requests.
+     */
+    private void manageMedicationInventoryAndReplenishment() {
+        int choice;
+        do {
+            view.displayMedicationMenu();
+            choice = view.getUserChoice();
+            switch (choice) {
+                case 1:
+                    addInventoryItem();
+                    break;
+                case 2:
+                    updateInventoryItem();
+                    break;
+                case 3:
+                    removeInventoryItem();
+                    break;
+                case 4:
+                    viewInventoryItems();
+                    break;
+                case 5:
+                    approveReplenishmentRequest();
+                    break;
+                case 6:
+                    view.displayMessage("Returning to main menu...");
+                    break;
+                default:
+                    view.displayMessage("Invalid choice. Please try again.");
+            }
+        } while (choice != 6);
+    }
+
+    /**
+     * Adds a new inventory item.
+     */
+    private void addInventoryItem() {
+        String medicationName = view.getMedicationNameInput();
+        int stockLevel = view.getInventoryItemQuantityInput();
+        int lowStockAlertLevel = view.getLowStockAlertLevelInput();
+
+        InventoryItem newItem = new InventoryItem(medicationName, stockLevel, lowStockAlertLevel);
+        inventory.add(newItem);
+        saveInventory();
+        view.displayMessage("Inventory item added successfully.");
+    }
+
+    /**
+     * Updates an existing inventory item.
+     */
+    private void updateInventoryItem() {
+        String medicationName = view.getMedicationNameInput();
+        InventoryItem item = findInventoryItemByName(medicationName);
+
+        if (item == null) {
+            view.displayMessage("Medication not found in inventory.");
+            return;
+        }
+
+        System.out.println("Current Stock Level: " + item.getStockLevel());
+        int newStockLevel = view.getInventoryItemQuantityInput();
+        item.setStockLevel(newStockLevel);
+
+        System.out.println("Current Low Stock Alert Level: " + item.getLowStockAlertLevel());
+        int newLowStockAlertLevel = view.getLowStockAlertLevelInput();
+        item.setLowStockAlertLevel(newLowStockAlertLevel);
+
+        saveInventory();
+        view.displayMessage("Inventory item updated successfully.");
+    }
+
+    /**
+     * Removes an inventory item.
+     */
+    private void removeInventoryItem() {
+        String medicationName = view.getMedicationNameInput();
+        InventoryItem item = findInventoryItemByName(medicationName);
+
+        if (item != null) {
+            inventory.remove(item);
+            saveInventory();
+            view.displayMessage("Inventory item removed successfully.");
+        } else {
+            view.displayMessage("Medication not found in inventory.");
+        }
+    }
+
+    /**
+     * Displays all inventory items.
+     */
+    private void viewInventoryItems() {
+        if (inventory.isEmpty()) {
+            view.displayMessage("No inventory items found.");
+            return;
+        }
+        view.displayInventory(inventory);
+    }
+
+    /**
+     * Approves a replenishment request by updating inventory quantities.
+     */
+    private void approveReplenishmentRequest() {
+        List<InventoryItem> pendingRequests = getPendingReplenishmentRequests();
+        view.displayReplenishmentRequests(pendingRequests);
+
+        if (pendingRequests.isEmpty()) {
+            return;
+        }
+
+        String medicationName = view.getReplenishmentApprovalInput();
+        InventoryItem itemToApprove = findInventoryItemByName(medicationName);
+
+        if (itemToApprove != null && itemToApprove.getReplenishRequestAmount() > 0) {
+            int replenishAmount = itemToApprove.getReplenishRequestAmount();
+            itemToApprove.setStockLevel(itemToApprove.getStockLevel() + replenishAmount);
+            itemToApprove.setReplenishRequestAmount(0); // Reset after approval
+            saveInventory();
+            view.displayMessage("Replenishment request approved and inventory updated.");
+        } else {
+            view.displayMessage("Invalid Medication Name or no pending replenishment request for this medication.");
+        }
+    }
+
+    /**
+     * Retrieves inventory items with pending replenishment requests.
+     *
+     * @return List of inventory items with replenishRequestAmount > 0.
+     */
+    private List<InventoryItem> getPendingReplenishmentRequests() {
+        List<InventoryItem> pending = new ArrayList<>();
+        for (InventoryItem item : inventory) {
+            if (item.getReplenishRequestAmount() > 0) {
+                pending.add(item);
+            }
+        }
+        return pending;
+    }
+
+    /**
+     * Finds an inventory item by its medication name.
+     *
+     * @param medicationName The name of the medication.
+     * @return The InventoryItem object or null if not found.
+     */
+    private InventoryItem findInventoryItemByName(String medicationName) {
+        for (InventoryItem item : inventory) {
+            if (item.getMedicationName().equalsIgnoreCase(medicationName)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Displays appointment details.
      */
     private void viewAppointmentDetails() {
+        if (appointments.isEmpty()) {
+            view.displayMessage("No appointments found.");
+            return;
+        }
         view.displayAppointments(appointments);
-    }
-
-    /**
-     * Manages the medication inventory.
-     */
-    private void manageMedicationInventory() {
-        // Implementation for managing medication inventory
-    }
-
-    /**
-     * Approves replenishment requests.
-     */
-private void approveReplenishmentRequests() {
-    boolean found = false;
-    List<String> pendingRequests = new ArrayList<>();
-
-    // Collect all pending requests for display
-    for (InventoryItem item : inventory) {
-        if (item.getReplenishRequestAmount() > 0) {
-            pendingRequests.add("Medication: " + item.getMedicationName() + ", Requested Amount: " + item.getReplenishRequestAmount());
-            found = true;
-        }
-    }
-
-    if (!found) {
-        view.displayMessage("No pending replenishment requests.");
-        return;
-    }
-
-    // Display all pending requests
-    view.displayReplenishmentRequests(pendingRequests);
-
-    // Process each request individually
-    for (InventoryItem item : inventory) {
-        if (item.getReplenishRequestAmount() > 0) {
-            String medicationName = item.getMedicationName();
-            int requestedAmount = item.getReplenishRequestAmount();
-
-            // Prompt for approval or rejection
-            boolean approve = view.getApprovalDecision(medicationName, requestedAmount);
-
-            if (approve) {
-                item.setStockLevel(item.getStockLevel() + requestedAmount);
-                view.displayMessage("Replenishment for " + medicationName + " approved.");
-            } else {
-                view.displayMessage("Replenishment for " + medicationName + " rejected.");
-            }
-
-            // Reset the request amount after processing
-            item.setReplenishRequestAmount(0);
-            saveInventory(); // Save after each decision
-        }
-    }
-}
-
-
-      /**
-     * Saves inventory to the serialized file.
-     */
-    private void saveInventory() {
-        try {
-            SerializationUtil.serialize(inventory, "inventory.ser");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -217,8 +434,12 @@ private void approveReplenishmentRequests() {
     private void loadUsers() {
         try {
             users = (HashMap<String, User>) SerializationUtil.deserialize("users.ser");
+            if (users == null) {
+                users = new HashMap<>();
+            }
         } catch (Exception e) {
             users = new HashMap<>();
+            view.displayMessage("Error loading users data.");
         }
     }
 
@@ -239,8 +460,22 @@ private void approveReplenishmentRequests() {
     private void loadAppointments() {
         try {
             appointments = (List<Appointment>) SerializationUtil.deserialize("appointments.ser");
+            if (appointments == null) {
+                appointments = new ArrayList<>();
+            }
         } catch (Exception e) {
             appointments = new ArrayList<>();
+        }
+    }
+
+    /**
+     * Saves appointments to the serialized file.
+     */
+    private void saveAppointments() {
+        try {
+            SerializationUtil.serialize(appointments, "appointments.ser");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -250,8 +485,22 @@ private void approveReplenishmentRequests() {
     private void loadInventory() {
         try {
             inventory = (List<InventoryItem>) SerializationUtil.deserialize("inventory.ser");
+            if (inventory == null) {
+                inventory = new ArrayList<>();
+            }
         } catch (Exception e) {
             inventory = new ArrayList<>();
+        }
+    }
+
+    /**
+     * Saves inventory to the serialized file.
+     */
+    private void saveInventory() {
+        try {
+            SerializationUtil.serialize(inventory, "inventory.ser");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

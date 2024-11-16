@@ -56,10 +56,32 @@ public class DoctorView {
         System.out.println("\nPatient Medical Record:");
         System.out.println("Patient ID: " + record.getPatientID());
         System.out.println("Name: " + record.getName());
+        System.out.println("Date of Birth: " + record.getDateOfBirth());
+        System.out.println();
 
         // Display other details
-        System.out.println("Past Diagnoses: " +record.getpastDiagnoses());
-        System.out.println("Past Treatments: " +record.getpastTreatments());
+        System.out.println("Past Medical History:");
+        List<String> pastDiagnoses = record.getPastDiagnoses();
+        List<String> pastTreatments = record.getPastTreatments();
+        if (!pastDiagnoses.isEmpty())
+        {
+            for(int i = 0; i < pastDiagnoses.size(); i++){
+                System.out.println("Past Diagnosis: " + pastDiagnoses.get(i));
+                }
+        }
+        else{
+            System.out.println("No past diagnoses.");
+        }
+
+        if (!pastTreatments.isEmpty())
+        {
+            for(int i = 0; i < pastTreatments.size(); i++){
+                System.out.println("Past Treatment: " + pastTreatments.get(i));
+                }
+        }
+        else{
+            System.out.println("No past treatments.");
+        }
     }
 
     /**

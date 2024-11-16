@@ -47,6 +47,7 @@ public class Doctor extends User {
 
     //Returns the schedule of the doctor
     public List<String> getSchedule() {
+        
         return schedule;
     }
 

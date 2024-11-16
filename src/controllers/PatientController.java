@@ -20,7 +20,7 @@ import views.PatientView;
  */
 public class PatientController {
     private Patient model;
-    //private Doctor doctor;
+    private Doctor doctor;
     private PatientView view;
     private MedicalRecord record;
     private List<Appointment> appointments;
@@ -61,13 +61,13 @@ public class PatientController {
                     updatePersonalInfo();
                     break;
                 case 3:
-                    viewAvailableAppointmentSlots(); //Extract Schedule from Doctor 
+                    viewAvailableAppointmentSlots(); 
                     break;
                 case 4:
-                    //scheduleAppointment();
+                    scheduleAppointment();
                     break;
                 case 5:
-                    //rescheduleAppointment();
+                    rescheduleAppointment();
                     break;
                 case 6:
                     cancelAppointment();
@@ -191,102 +191,128 @@ public class PatientController {
     /**
      * Allows the patient to schedule an appointment.
      */
-    // private void scheduleAppointment() {
-    //     String doctorID = view.getDoctorIDInput(); //Instead of DoctorID, maybe we should ask for the Doctor's name? Print out the list of Doctors?
-    //     String dateTimeStr = view.getAppointmentDateTime();
-    //     LocalDateTime dateTime; 
-    //     //List<String> slots = getAvailableAppointmentSlots(doctorID);
-    //     String formattedDateTime;
+    private void scheduleAppointment() {
+        String doctorID = view.getDoctorIDInput(); // Instead of DoctorID, maybe we should ask for the Doctor's name? Print out the list of Doctors?
+        assignDoctor(doctorID);
 
-    //     try{
-    //         dateTime = LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")); 
-    //         formattedDateTime = dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")); //Include try and exception handling
+        if (doctor == null) {
+            view.displayMessage("Doctor not found. Please try again.");
+            return;
+        }
 
-    //         if (!slots.contains(formattedDateTime)) {
-    //             view.displayMessage("The selected slot is not available. Please choose a different time.");
-    //             return;
-    //         }
-        
-    //         Appointment appointment = new Appointment(
-    //                 "APT" + System.currentTimeMillis(),
-    //                 model.getUserID(),
-    //                 doctorID,
-    //                 dateTime
-    //         );
-    //         appointment.setStatus("pending");
-    //         appointments.add(appointment);
-    //         saveAppointments();
-    //         slots.remove(formattedDateTime);
-    //         view.displayMessage("Appointment scheduled successfully.");
-    //         } catch (Exception e){
-    //             view.displayMessage("Invalid date and time. Please enter a valid date and time.");
-    //         }
-    //     }
+        List<String> slots = getDoctorSchedule(doctorID);
+        view.displayAvailableSlots(slots);
+
+        String dateTimeStr = view.getAppointmentDateTime();
+        LocalDateTime dateTime;
+
+        try {
+            dateTime = LocalDateTime.parse(dateTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            String formattedDateTime = dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+
+            if (!slots.contains(formattedDateTime)) {
+                view.displayMessage("The selected slot is not available. Please choose a different time.");
+                return;
+            }
+
+            // Check if the user already has an appointment for the same time
+            for (Appointment existingAppointment : appointments) {
+                if (existingAppointment.getPatientID().equals(model.getUserID()) && 
+                    existingAppointment.getDateTime().equals(dateTime)) {
+                    view.displayMessage("You have an existing appointment request that is currently being processed on the same day and time. Please check if the appointment has gone through using the view Scheduled Appointment.");
+                    return;
+                }
+            }
+
+            Appointment appointment = new Appointment(
+                    "APT" + System.currentTimeMillis(),
+                    model.getUserID(),
+                    doctorID,
+                    dateTime
+            );
+
+            appointment.setStatus("pending");
+            appointments.add(appointment);
+            saveAppointments();
+            slots.remove(formattedDateTime);
+            view.displayMessage("Appointment scheduled successfully.");
+        } catch (Exception e) {
+            view.displayMessage("Invalid date and time. Please enter a valid date and time.");
+        }
+        }
 
     /**
      * Allows the patient to reschedule an appointment.
      */
-    // private void rescheduleAppointment() {
+    private void rescheduleAppointment() {
         
-    //     List<Appointment> patientAppointments = new ArrayList<>();
-    //     for (Appointment appt : appointments) {
-    //         if (appt.getPatientID().equals(model.getUserID())) {
-    //             patientAppointments.add(appt);
-    //         }
-    //     }
+        List<Appointment> patientAppointments = new ArrayList<>();
+        for (Appointment appt : appointments) {
+            if (appt.getPatientID().equals(model.getUserID())) {
+                patientAppointments.add(appt);
+            }
+        }
         
-    //     if (patientAppointments.isEmpty()) {
-    //         view.displayMessage("No scheduled appointments to reschedule.");
-    //         return;
-    //     }
+        if (patientAppointments.isEmpty()) {
+            view.displayMessage("No scheduled appointments to reschedule.");
+            return;
+        }
 
-    //     view.displayScheduledAppointments(patientAppointments);
-    //     String appointmentID = view.getAppointmentIDInput(); // Assuming the user inputs the appointment ID they want to reschedule
+        view.displayScheduledAppointments(patientAppointments);
+        String appointmentID = view.getAppointmentIDInput(); // Assuming the user inputs the appointment ID they want to reschedule
 
-    //     Appointment appointmentToReschedule = null;
-    //     for (Appointment appt : patientAppointments) {
-    //         if (appt.getAppointmentID().equals(appointmentID)) {
-    //             appointmentToReschedule = appt;
-    //             break;
-    //         }
-    //     }
+        Appointment appointmentToReschedule = null;
+        for (Appointment appt : patientAppointments) {
+            if (appt.getAppointmentID().equals(appointmentID)) {
+                appointmentToReschedule = appt;
+                break;
+            }
+        }
 
-    //     if (appointmentToReschedule == null) {
-    //         view.displayMessage("Appointment ID not found. Please try again.");
-    //         return;
-    //     }
+        if (appointmentToReschedule == null) {
+            view.displayMessage("Appointment ID not found. Please try again.");
+            return;
+        }
 
-    //     String newDateTimeStr = view.getAppointmentDateTime();
-    //     LocalDateTime newDateTime;
+        String newDateTimeStr = view.getAppointmentDateTime();
+        LocalDateTime newDateTime;
         
-    //     try {
-    //         newDateTime = LocalDateTime.parse(newDateTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-    //     } catch (Exception e) {
-    //         view.displayMessage("Invalid date and time format. Please enter it as yyyy-MM-dd HH:mm.");
-    //         return;
-    //     }
+        try {
+            newDateTime = LocalDateTime.parse(newDateTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        } catch (Exception e) {
+            view.displayMessage("Invalid date and time format. Please enter it as yyyy-MM-dd HH:mm.");
+            return;
+        }
     
-    //     String doctorID = appointmentToReschedule.getDoctorID();
-    //     //List<String> availableSlots = getAvailableAppointmentSlots(doctorID);
+        String doctorID = appointmentToReschedule.getDoctorID();
+        List<String> availableSlots = getDoctorSchedule(doctorID);
     
-    //     // Check if the new date and time is available
-    //     String formattedNewDateTime = newDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-    //     if (!availableSlots.contains(formattedNewDateTime)) {
-    //         view.displayMessage("The selected time slot is not available. Please choose a different time.");
-    //         return;
-    //     }
+        // Check if the new date and time is available
+        String formattedNewDateTime = newDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        if (!availableSlots.contains(formattedNewDateTime)) {
+            view.displayMessage("The selected time slot is not available. Please choose a different time.");
+            return;
+        }
+
+        for (Appointment existingAppointment : appointments) {
+            if (existingAppointment.getPatientID().equals(model.getUserID()) && 
+                existingAppointment.getDateTime().equals(newDateTime)) {
+                view.displayMessage("You have an existing appointment request that is currently being processed on the same day and time. Please check if the appointment has gone through using the view Scheduled Appointment.");
+                return;
+            }
+        }
     
-    //     // Add the old appointment time back to available slots
-    //     String oldDateTime = appointmentToReschedule.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-    //     availableSlots.add(oldDateTime);
+        // Add the old appointment time back to available slots
+        String oldDateTime = appointmentToReschedule.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+        availableSlots.add(oldDateTime);
     
-    //     // Update the appointment with the new date and time
-    //     appointmentToReschedule.setDateTime(newDateTime);
-    //     availableSlots.remove(formattedNewDateTime); // Remove the newly rescheduled appointment slot from available slots
+        // Update the appointment with the new date and time
+        appointmentToReschedule.setDateTime(newDateTime);
+        availableSlots.remove(formattedNewDateTime); // Remove the newly rescheduled appointment slot from available slots
     
-    //     saveAppointments(); // Save the updated appointments list
-    //     view.displayMessage("Appointment rescheduled successfully.");
-    // }
+        saveAppointments(); // Save the updated appointments list
+        view.displayMessage("Appointment rescheduled successfully.");
+    }
 
     /**
      * Allows the patient to cancel an appointment.
@@ -321,10 +347,10 @@ public class PatientController {
         String canceledSlot = appointmentToCancel.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
 
         // Add the canceled appointment slot back to available slots
-        //List<String> availableSlots = getAvailableAppointmentSlots(doctorID);
-        //if (!availableSlots.contains(canceledSlot)) {
-        //    availableSlots.add(canceledSlot);
-        //    }
+        List<String> availableSlots = getDoctorSchedule(doctorID);
+        if (!availableSlots.contains(canceledSlot)) {
+           availableSlots.add(canceledSlot);
+           }
 
         // Update appointment status and remove it from the list
         appointmentToCancel.setStatus("canceled");
@@ -359,9 +385,11 @@ public class PatientController {
 
         // Loop through appointments to find past ones
         for (Appointment appointment : appointments) {
-            if (appointment.getPatientID().equals(model.getUserID()) && appointment.getDateTime().isBefore(now)) {
+            if (appointment.getPatientID().equals(model.getUserID())) {
                 // Assuming getOutcome() returns an AppointmentOutcome or a string
-                pastOutcomes.add(appointment.getOutcome());
+                if (appointment.getOutcome() != null){
+                    pastOutcomes.add(appointment.getOutcome());
+                }
             }
         }
 
@@ -430,4 +458,59 @@ public class PatientController {
         }
         return schedule;
     }
+
+    public List<String> getDoctorSchedule(String doctorID) {
+        try {
+            String fileName = "Schedule_" + doctorID + ".ser";
+            // Deserialize the schedule
+            List<String> schedule = (List<String>) SerializationUtil.deserialize(fileName);
+            
+            // Filter out the slots that are marked as "unavailable"
+            List<String> availableSlots = new ArrayList<>();
+            if (schedule != null) {
+                for (String slot : schedule) {
+                    // Exclude slots that contain "unavailable"
+                    if (!slot.contains("Unavailable")) {
+                        availableSlots.add(slot);
+                    }
+                }
+            }
+    
+            return availableSlots;
+        } catch (Exception e) {
+            System.out.println("Error loading schedule for doctor with ID: " + doctorID);
+            return null;
+        }
+    }
+
+
+     /**
+     * Assigns a doctor to the current instance based on the given doctor ID.
+     * 
+     * This method deserializes the "users.ser" file, searches for a Doctor object 
+     * whose userID matches the provided doctorID, and assigns it to the `this.doctor` field.
+     * If no matching doctor is found, it throws an exception.
+     * 
+     * @param doctorID The unique ID of the doctor to be assigned.
+     * @throws IllegalStateException if no doctor with the given ID is found.
+     * @throws Exception if deserialization fails or if the file is not found.
+     */
+    private void assignDoctor(String doctorID) {
+        if (doctors == null || doctors.isEmpty()) {
+            loadDoctors();  // Load the doctor data if not already loaded
+        }
+    
+        // Attempt to find the doctor in the doctors map by ID
+        Doctor assignedDoctor = doctors.get(doctorID);
+    
+        // If the doctor is found, assign them; otherwise, show an error message
+        if (assignedDoctor != null) {
+            this.doctor = assignedDoctor;  // Assign the doctor to this patient
+            view.displayMessage("Doctor " + assignedDoctor.getName() + " has been successfully assigned.");
+        } else {
+            // If no doctor found with the given ID, show an error message
+            view.displayMessage("Error: Doctor with ID " + doctorID + " not found. Please try again.");
+        }
+    }
+
 }

@@ -158,7 +158,9 @@ public class PatientView {
         System.out.println("\nPast Appointment Outcomes:");
         for (AppointmentOutcome outcome : outcomes) {
             System.out.println("Date: " + outcome.getDateOfAppointment());
-            // Display other details
+            System.out.println("Service: " + outcome.getTypeOfService());
+            System.out.println("Prescription: " + outcome.getPrescriptions());
+            System.out.println("Note: " + outcome.getConsultationNotes());
         }
     }
 }

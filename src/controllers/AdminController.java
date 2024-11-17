@@ -125,26 +125,49 @@ public class AdminController {
     }
 
     /**
-     * Displays the schedule of an individual doctor.
-     *
-     * @param doctorID The ID of the doctor whose schedule is to be viewed.
-     */
-    public void viewIndividualDoctorSchedule(String doctorID) {
+    * Displays the schedule of an individual doctor.
+    *
+    * @param doctorID The ID of the doctor whose schedule is to be viewed.
+    */
+
+    public void viewIndividualDoctorSchedule(String doctorID){
         Doctor doctor = doctors.get(doctorID);
         if (doctor == null) {
-            view.displayMessage("Doctor with ID " + doctorID + " not found.");
-            return;
+        view.displayMessage("Doctor with ID " + doctorID + " not found.");
+        return;
         }
 
+        // Load the doctor's schedule from a serialized file
+        loadDoctorSchedule(doctor);
+
         List<String> schedule = doctor.getSchedule();
+
         if (schedule == null || schedule.isEmpty()) {
             view.displayMessage("No schedule available for Dr. " + doctor.getName() + ".");
             return;
         }
-
         view.displayMessage("Schedule for Dr. " + doctor.getName() + " (ID: " + doctorID + "):");
         view.displayDoctorSchedule(schedule, appointments, doctorID);
+        
+
     }
+
+    /**
+     * Loads the schedule for a specific doctor from a serialized file.
+     *
+     * @param doctor The Doctor object whose schedule is to be loaded.
+     */
+    private void loadDoctorSchedule(Doctor doctor) {
+        try {
+            String fileName = "Schedule_" + doctor.getUserID() + ".ser";
+            // Load schedule from serialized file
+            List<String> loadedSchedule = (List<String>) SerializationUtil.deserialize(fileName);
+            doctor.setSchedule(loadedSchedule);
+        } catch (Exception e) {
+            view.displayMessage("Error loading schedule for Dr. " + doctor.getName());
+        }
+    }
+
 
     /**
      * Manages hospital staff by adding, updating, or removing staff members.
@@ -177,14 +200,25 @@ public class AdminController {
     }
 
     /**
-     * Displays a list of all staff members.
-     */
-    private void viewStaffMembers() {
-        if (users.isEmpty()) {
+    * Displays a list of all staff members (Doctor, Pharmacist, Admin).
+    */
+    private void viewStaffMembers(){
+        // Filter users to include only Doctor, Pharmacist, and Admin
+        List<User> staffList = new ArrayList<>();
+
+        for (User user : users.values()) {
+            if (user instanceof Doctor || user instanceof Pharmacist || user instanceof Administrator) {
+                staffList.add(user);
+            }
+        }
+
+        if (staffList.isEmpty()) {
             view.displayMessage("No staff members found.");
             return;
         }
-        view.displayStaffList(new ArrayList<>(users.values()));
+
+        view.displayStaffList(staffList);    
+    
     }
 
     /**
@@ -206,6 +240,8 @@ public class AdminController {
             newUser = new Doctor(userID, name, password);
         } else if (role.equalsIgnoreCase("Pharmacist")) {
             newUser = new Pharmacist(userID, name, password);
+        } else if (role.equalsIgnoreCase("Admin")) {
+            newUser = new Administrator(userID, name, password);
         }
 
         if (newUser != null) {
@@ -214,7 +250,7 @@ public class AdminController {
             loadDoctors(); // Update doctors map if a doctor was added
             view.displayMessage("Staff member added.");
         } else {
-            view.displayMessage("Invalid role. Only 'Doctor' and 'Pharmacist' roles are allowed.");
+            view.displayMessage("Invalid role. Only Admin, Doctor and Pharmacist roles are allowed.");
         }
     }
 
@@ -232,13 +268,20 @@ public class AdminController {
         String newName = view.getNameInput();
         String newPassword = view.getPasswordInput();
 
+        // Display current details before updating
+        view.displayMessage("Current Name: " + oldUser.getName());
+        view.displayMessage("Current Password: " + oldUser.getHashedPassword());
+
         // Create a new User object with updated details
         User updatedUser = null;
         if (oldUser instanceof Doctor) {
             updatedUser = new Doctor(userID, newName, newPassword);
         } else if (oldUser instanceof Pharmacist) {
             updatedUser = new Pharmacist(userID, newName, newPassword);
-        } else {
+        } else if (oldUser instanceof Administrator) {
+            updatedUser = new Administrator(userID, newName, newPassword);
+        }
+        else {
             view.displayMessage("Unknown user role. Cannot update.");
             return;
         }
@@ -296,45 +339,112 @@ public class AdminController {
                     view.displayMessage("Invalid choice. Please try again.");
             }
         } while (choice != 6);
-    }
+    }  
+
 
     /**
      * Adds a new inventory item.
      */
     private void addInventoryItem() {
-        String medicationName = view.getMedicationNameInput();
+        String medicationName = view.getMedicationNameInput().trim();
+        
+        // Validate medication name
+        if (medicationName.isEmpty()) {
+            view.displayMessage("Error: Medication name cannot be empty.");
+            return;
+        }
+    
         int stockLevel = view.getInventoryItemQuantityInput();
         int lowStockAlertLevel = view.getLowStockAlertLevelInput();
-
+    
+        // Validate stock levels
+        if (stockLevel < 0) {
+            view.displayMessage("Error: Stock level cannot be negative.");
+            return;
+        }
+    
+        if (lowStockAlertLevel < 0) {
+            view.displayMessage("Error: Low stock alert level cannot be negative.");
+            return;
+        }
+    
+        // Check if the medication already exists in the inventory (ignoring case)
+        boolean exists = inventory.stream()
+                .anyMatch(item -> item.getMedicationName().equalsIgnoreCase(medicationName));
+    
+        if (exists) {
+            view.displayMessage("Error: Medication '" + medicationName + "' already exists in the inventory.");
+            return; // Exit the method without adding the duplicate
+        }
+    
+        // If medication is unique, proceed to add it
         InventoryItem newItem = new InventoryItem(medicationName, stockLevel, lowStockAlertLevel);
         inventory.add(newItem);
         saveInventory();
-        view.displayMessage("Inventory item added successfully.");
+        view.displayMessage("Inventory item '" + medicationName + "' added successfully.");
     }
+    
 
     /**
      * Updates an existing inventory item.
      */
     private void updateInventoryItem() {
-        String medicationName = view.getMedicationNameInput();
-        InventoryItem item = findInventoryItemByName(medicationName);
-
-        if (item == null) {
-            view.displayMessage("Medication not found in inventory.");
+        // Prompt and retrieve the medication name, trimming any leading/trailing spaces
+        String medicationName = view.getMedicationNameInput().trim();
+        
+        // Validate that the medication name is not empty
+        if (medicationName.isEmpty()) {
+            view.displayMessage("Error: Medication name cannot be empty.");
             return;
         }
-
-        System.out.println("Current Stock Level: " + item.getStockLevel());
+    
+        // Attempt to find the inventory item by name (case-insensitive)
+        InventoryItem item = findInventoryItemByName(medicationName);
+    
+        if (item == null) {
+            view.displayMessage("Error: Medication '" + medicationName + "' not found in inventory.");
+            return;
+        }
+    
+        // Display current stock levels
+        view.displayMessage("Current Stock Level: " + item.getStockLevel());
+        
+        // Prompt and retrieve the new stock level
         int newStockLevel = view.getInventoryItemQuantityInput();
-        item.setStockLevel(newStockLevel);
-
-        System.out.println("Current Low Stock Alert Level: " + item.getLowStockAlertLevel());
+        
+        // Validate that the new stock level is non-negative
+        if (newStockLevel < 0) {
+            view.displayMessage("Error: Stock level cannot be negative.");
+            return;
+        }
+    
+        // Prompt and retrieve the new low stock alert level
+        view.displayMessage("Current Low Stock Alert Level: " + item.getLowStockAlertLevel());
         int newLowStockAlertLevel = view.getLowStockAlertLevelInput();
+        
+        // Validate that the new low stock alert level is non-negative
+        if (newLowStockAlertLevel < 0) {
+            view.displayMessage("Error: Low stock alert level cannot be negative.");
+            return;
+        }
+    
+        // Optional: Ensure that low stock alert level does not exceed stock level
+        if (newLowStockAlertLevel > newStockLevel) {
+            view.displayMessage("Error: Low stock alert level cannot exceed the stock level.");
+            return;
+        }
+    
+        // Update the inventory item with validated values
+        item.setStockLevel(newStockLevel);
         item.setLowStockAlertLevel(newLowStockAlertLevel);
-
+    
+        // Save the updated inventory to persistent storage
         saveInventory();
-        view.displayMessage("Inventory item updated successfully.");
+    
+        // Notify the user of the successful update
+        view.displayMessage("Inventory item '" + medicationName + "' updated successfully.");
     }
+    
 
     /**
      * Removes an inventory item.

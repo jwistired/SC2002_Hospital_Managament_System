@@ -197,87 +197,11 @@ public class AdminView {
     }
 
     /**
-     * Gets the low stock alert level input from the user.
-     *
-     * @return The alert level.
-     */
-    public int getLowStockAlertLevelInput() {
-        System.out.print("Enter Low Stock Alert Level: ");
-        while (true) {
-            String input = scanner.nextLine();
-            try {
-                int level = Integer.parseInt(input);
-                if (level < 0) {
-                    System.out.print("Alert level cannot be negative. Enter again: ");
-                } else {
-                    return level;
-                }
-            } catch (NumberFormatException e) {
-                System.out.print("Invalid input. Please enter a valid integer: ");
-            }
-        }
-    }
-
-    /**
      * Gets the user's main menu choice.
      *
      * @return The user's choice as an integer.
      */
     public int getUserChoice() {
-        System.out.print("Enter your choice: ");
-        while (true) {
-            String input = scanner.nextLine();
-            try {
-                int choice = Integer.parseInt(input);
-                return choice;
-            } catch (NumberFormatException e) {
-                System.out.print("Invalid input. Please enter a number: ");
-            }
-        }
-    }
-
-    /**
-     * Gets the staff-related menu choice.
-     *
-     * @return The user's choice as an integer.
-     */
-    public int getStaffMenuChoice() {
-        System.out.print("Enter your choice: ");
-        while (true) {
-            String input = scanner.nextLine();
-            try {
-                int choice = Integer.parseInt(input);
-                return choice;
-            } catch (NumberFormatException e) {
-                System.out.print("Invalid input. Please enter a number: ");
-            }
-        }
-    }
-
-    /**
-     * Gets the medication inventory-related menu choice.
-     *
-     * @return The user's choice as an integer.
-     */
-    public int getMedicationMenuChoice() {
-        System.out.print("Enter your choice: ");
-        while (true) {
-            String input = scanner.nextLine();
-            try {
-                int choice = Integer.parseInt(input);
-                return choice;
-            } catch (NumberFormatException e) {
-                System.out.print("Invalid input. Please enter a number: ");
-            }
-        }
-    }
-
-    /**
-     * Gets the doctor schedules-related menu choice.
-     *
-     * @return The user's choice as an integer.
-     */
-    public int getDoctorScheduleMenuChoice() {
         System.out.print("Enter your choice: ");
         while (true) {
             String input = scanner.nextLine();
@@ -358,6 +282,28 @@ public class AdminView {
                 }
             } catch (NumberFormatException e) {
                 System.out.print("Invalid input. Please enter a number: ");
+            }
+        }
+    }
+
+    /**
+     * Gets the low stock alert level input from the user.
+     *
+     * @return The alert level.
+     */
+    public int getLowStockAlertLevelInput() {
+        System.out.print("Enter Low Stock Alert Level: ");
+        while (true) {
+            String input = scanner.nextLine();
+            try {
+                int level = Integer.parseInt(input);
+                if (level < 0) {
+                    System.out.print("Alert level cannot be negative. Enter again: ");
+                } else {
+                    return level;
+                }
+            } catch (NumberFormatException e) {
+                System.out.print("Invalid input. Please enter a valid integer: ");
             }
         }
     }

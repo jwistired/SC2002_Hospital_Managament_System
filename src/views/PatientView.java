@@ -144,7 +144,12 @@ public class PatientView {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         for (Appointment appt : appointments) {
             String dateTime = appt.getDateTime().format(formatter);
-            System.out.println("Appointment ID: " + appt.getAppointmentID() + ", Date and Time: " + dateTime + ", Status: " + appt.getStatus());
+            System.out.println("Appointment ID: " + appt.getAppointmentID() + 
+                           ", Date and Time: " + dateTime + 
+                           ", Status: " + appt.getStatus() +
+                           ", Doctor Name: " + appt.getDoctorName());  // Added doctorName to the output
+        // Display other details if needed
+            
             // Display other details
         }
     }

@@ -48,3 +48,4 @@ src/views/PharmacistView.class
 *.class
 src/models/Patient.class
 src/models/Administrator.class
+*.class

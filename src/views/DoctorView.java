@@ -148,16 +148,6 @@ public class DoctorView {
         return dateTimeStr;
     }
 
-
-
-     //Original Code
-    // public String getAvailabilityInput() {
-    //     //To be changed once confirmed
-    //     System.out.print("Enter Availability Time (YYYY-MM-DD HH:MM): ");
-    //     scanner.nextLine();
-    //     return scanner.nextLine();
-    // }
-
     /**
      * Displays appointment requests for the doctor.
      *
@@ -190,24 +180,17 @@ public class DoctorView {
         System.out.print("Accept or Decline (A/D): ");
         return scanner.nextLine();
     }
-
-    public String getPrescriptionDecision() {
-        System.out.print("Add this prescription? (Y/N): ");
+    
+    /**
+     * Gets the type of service input from the user.
+     *
+     *@return The name of service provided
+     */
+    public String getTypeOfServiceInput(){
+        System.out.print("Enter the type of service: ");
         return scanner.nextLine();
     }
 
-    public String addPrescription() {
-        System.out.print("Enter Prescription: ");
-        return scanner.nextLine();
-    }
-
-    // public List<String> displayPrescriptionList(List<String> prescriptions) {
-    //     System.out.println("Prescriptions:");
-    //     for (String prescription : prescriptions) {
-    //         System.out.println(prescription);
-    //     }
-    //     return prescriptions;
-    // }
 
     /**
      * Displays a message to the user.

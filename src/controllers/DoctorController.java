@@ -28,8 +28,7 @@ public class DoctorController {
     private HashMap<String, Patient> patients;
     private List<InventoryItem> availableMedication;
     private List<String> nameofMedication;
-
-    //private List<String> schedule;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     /**
      * Constructs a DoctorController object.
@@ -106,7 +105,6 @@ public class DoctorController {
     private void initializeSchedule() {
         String[] timeSlots = {"09:00", "10:00", "11:00", "13:00","14:00", "15:00", "16:00"};
         LocalDate date = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         List<String> tempschedule = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
             LocalDate currentDate = date.plusDays(i);
@@ -343,11 +341,16 @@ public class DoctorController {
 
         for (Appointment appt : appointments) {
             if (appt.getAppointmentID().equals(appointmentID) && appt.getDoctorID().equals(model.getUserID())) {
+
+                Patient patient = patients.get(appt.getPatientID());
                 apptIndex = appointments.indexOf(appt);
                 String dateOfAppointment = appt.getDateTime().toString();
-                String typeOfService = view.getDiagnosisInput(); // Reusing method for simplicity
-                String consultationNotes = view.getTreatmentInput(); // Reusing method for simplicity
-                
+                String typeOfService = view.getTypeOfServiceInput();
+                String treatmentplan = view.getTreatmentInput();
+                String diagnosis = view.getDiagnosisInput(); 
+                String consultationNotes = "\nDate: "+ dateOfAppointment + "\nDiagnosis: " + diagnosis + "\nTreatment Plan: " + treatmentplan;
+
+                //Intialize list of prescriptions, choice and quantity
                 List<Prescription> patientPrescriptions = new ArrayList<>();
                 int choice = -1;
                 int quantity = 0;
@@ -373,6 +376,14 @@ public class DoctorController {
                 AppointmentOutcome outcome = new AppointmentOutcome(dateOfAppointment, typeOfService, patientPrescriptions, consultationNotes);
                 appt.setOutcome(outcome);
                 appt.setStatus("completed");
+
+                //Add diagnosis and treatment to patient's medical record
+                if (patient != null) {
+                    patient.getMedicalRecord().addDiagnosis(diagnosis);
+                    patient.getMedicalRecord().addTreatment(treatmentplan);
+                    patient.saveModel();
+                }
+
                 saveAppointments();
                 view.displayMessage("Appointment outcome recorded.");
                 break;

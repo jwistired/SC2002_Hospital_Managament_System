@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import models.Appointment;
 import models.AppointmentOutcome;
 import models.Doctor;
@@ -134,6 +135,52 @@ public class PatientController {
     }
     }
         
+
+    /**
+ * Retrieves available appointment slots for a specific doctor.
+ */
+    // private List<String> getAvailableAppointmentSlots(String doctorID) {
+    //     List<String> slots = doctor.getSchedule();
+
+    //     // Filter out slots that are already taken
+    //     for (Appointment appt : appointments) {
+    //         if (appt.getDoctorID().equals(doctorID)) {
+    //             String bookedSlot = appt.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+    //             slots.remove(bookedSlot);
+    //         }
+    //     }
+
+    //     return slots;
+    // } /* 
+
+    /**
+     * Generates available appointment slots for the next 15 days.
+     *
+     * @return List of available appointment slots formatted as "yyyy-MM-dd HH:mm".
+     */
+    /*private List<String> generateAvailableAppointmentSlots() {
+        List<String> availableSlots = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+        String[] timeSlots = {"09:00", "10:00", "11:00", "14:00", "15:00", "16:00"};
+
+        // Loop through the next 15 days
+        for (int i = 0; i < 15; i++) {
+            // Calculate the date for the current day
+            LocalDateTime date = now.plusDays(i);
+            String dateString = date.toLocalDate().toString(); // Get the date in yyyy-MM-dd format
+
+            // Loop through each time slot
+            for (String time : timeSlots) {
+                // Combine the date and time into a single string
+                String slot = dateString + " " + time;
+                availableSlots.add(slot);
+            }
+        }
+
+        return availableSlots;
+    }
+    */    
+
     /**
      * Retrieves a list of appointments scheduled for the patient.
      *
@@ -391,13 +438,13 @@ public class PatientController {
      * Displays the patient's scheduled appointments.
      */
     private void viewScheduledAppointments() {
-        List<Appointment> patientAppointments = new ArrayList<>();
-        for (Appointment appt : appointments) {
-            if (appt.getPatientID().equals(model.getUserID())) {
-                patientAppointments.add(appt);
-            }
-        }
-        view.displayScheduledAppointments(patientAppointments);
+        List<Appointment> patientAppointments = appointments.stream()
+        .filter(appt -> !appt.getStatus().equals("completed"))  // Filter out completed appointments
+        .filter(appt -> appt.getPatientID().equals(model.getUserID()))  // Filter appointments for the current patient
+        .collect(Collectors.toList());  // Collect the results back into a list
+
+    // Display the filtered list of appointments
+    view.displayScheduledAppointments(patientAppointments);
     }
 
     /**
@@ -435,9 +482,9 @@ public class PatientController {
     private void loadAppointments() {
         try {
             appointments = (List<Appointment>) SerializationUtil.deserialize("appointments.ser");
-            appointments = appointments.stream()
+            /*appointments = appointments.stream()
                                    .filter(appt -> !appt.getStatus().equals("completed"))
-                                   .collect(Collectors.toList());
+                                   .collect(Collectors.toList()); */
         } catch (Exception e) {
             appointments = new ArrayList<>();
         }
@@ -477,46 +524,17 @@ public class PatientController {
      */    
     private List<String> loadSchedule(String docid) {
         List<String> schedule = new ArrayList<>();
-        try {
-            String fileName = "Schedule_" + docid + ".ser";
-            // Load schedule from serialized file
-            schedule = ((List<String>) SerializationUtil.deserialize(fileName));
-        } catch (Exception e) {
-            System.out.println("Error loading schedule: " + e.getMessage());
-        }
-        return schedule;
+    try {
+        String fileName = "Schedule_" + docid + ".ser";
+        // Load schedule from serialized file
+        schedule = (List<String>) SerializationUtil.deserialize(fileName);
+        
+        // Remove slots that contain "Unavailable" at the end of the string
+        schedule.removeIf(slot -> slot.trim().endsWith("Unavailable"));
+        
+    } catch (Exception e) {
+        System.out.println("Error loading schedule: " + e.getMessage());
     }
-
-    /**
-     * Gets the doctor's schedule for display.
-     *
-     * @param doctorID The ID of the doctor.
-     * @return The list of available slots for the doctor.
-     */
-    public List<String> getDoctorSchedule(String doctorID) {
-        try {
-            String fileName = "Schedule_" + doctorID + ".ser";
-            // Deserialize the schedule
-            List<String> schedule = (List<String>) SerializationUtil.deserialize(fileName);
-            
-            // Filter out the slots that are marked as "unavailable"
-            List<String> availableSlots = new ArrayList<>();
-            if (schedule != null) {
-                // Add doctor name as the first entry in the list
-                availableSlots.add("Doctor: " + doctor.getName());
-                // Filter out the slots that are marked as "unavailable"
-                for (String slot : schedule) {
-                    // Exclude slots that contain "Unavailable"
-                    if (!slot.contains("Unavailable")) {
-                        availableSlots.add(slot);
-                    }
-                }
-            }
-    
-            return availableSlots;
-        } catch (Exception e) {
-            System.out.println("Error loading schedule for doctor with ID: " + doctorID);
-            return null;
-        }
+    return schedule;
     }
 }

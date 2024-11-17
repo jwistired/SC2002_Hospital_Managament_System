@@ -98,4 +98,9 @@ public class PharmacistView {
     public void displayMessage(String message) {
         System.out.println(message);
     }
+    public String getAppointmentIDInput() {
+        System.out.print("Enter AppointmentID to dispense: ");
+        return scanner.nextLine();
+    }
+
 }

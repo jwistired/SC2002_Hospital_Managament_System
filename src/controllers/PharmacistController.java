@@ -66,15 +66,30 @@ public class PharmacistController {
      * Displays appointment outcome records, including prescriptions.
      */
     private void viewAppointmentOutcomeRecords() {
-        List<Prescription> allPrescriptions = getAllPrescriptions();
-        view.displayPrescriptions(allPrescriptions);
+        for (Appointment appt : appointments) {
+            AppointmentOutcome outcome = appt.getOutcome();
+            if (outcome != null) {
+                view.displayMessage("Patient ID: " + appt.getPatientID());
+                view.displayMessage("Appointment ID: " + appt.getAppointmentID());
+                view.displayMessage("Date: " + outcome.getDateOfAppointment());
+                view.displayMessage("Service: " + outcome.getTypeOfService());
+                view.displayMessage("Consultation Notes: " + outcome.getConsultationNotes());
+                for (Prescription presc : outcome.getPrescriptions()) {
+                    view.displayMessage("Medication: " + presc.getMedicationName() +
+                            ", Quantity: " + presc.getQuantity() +
+                            ", Status: " + presc.getStatus());
+                }
+            }
+        }
     }
+
 
     /**
      * Allows the pharmacist to update the status of a prescription.
      */
     private void updatePrescriptionStatus() {
         String medicationName = view.getMedicationNameInput();
+        String apptIDinput = view.getAppointmentIDInput();
         int quantity = view.getQuantityInput();
         boolean found = false;
 
@@ -83,11 +98,12 @@ public class PharmacistController {
             if (outcome != null) {
                 List<Prescription> prescriptions = outcome.getPrescriptions();
                 for (Prescription presc : prescriptions) {
-                    if (presc.getMedicationName().equalsIgnoreCase(medicationName) && presc.getQuantity() == quantity && !presc.getStatus().equals("dispensed")) {
+                    if (presc.getMedicationName().equalsIgnoreCase(medicationName) && presc.getQuantity() == quantity && !presc.getStatus().equals("dispensed") && appt.getAppointmentID().equalsIgnoreCase(apptIDinput)) {
                         for (InventoryItem item : inventory){
                             if (item.getStockLevel() >= quantity)
                             {
                                 item.setStockLevel(item.getStockLevel() - quantity);
+                                view.displayMessage("Appointment ID: " + apptIDinput);
                                 presc.setStatus("dispensed");
                                 saveInventory();
                                 found = true;

@@ -438,8 +438,22 @@ public class PatientController {
         .filter(appt -> appt.getPatientID().equals(model.getUserID()))  // Filter appointments for the current patient
         .collect(Collectors.toList());  // Collect the results back into a list
 
-    // Display the filtered list of appointments
-    view.displayScheduledAppointments(patientAppointments);
+        if (patientAppointments.isEmpty()) {
+            view.displayMessage("You have no scheduled appointments.");
+            return;
+        }
+        
+        for (Appointment appt : patientAppointments) {
+            String doctorID = appt.getDoctorID();
+            Doctor doctor = doctors.get(doctorID);  // Retrieve the doctor object based on doctorID
+            if (doctor != null) {
+                appt.setDoctorName(doctor.getName());  // Set the doctor's name in the appointment object
+            } else {
+                appt.setDoctorName("Unknown Doctor");  // Handle the case where the doctor is not found
+            }
+        }    
+        // Display the filtered list of appointments with doctor names
+        view.displayScheduledAppointments(patientAppointments);
     }
 
     /**

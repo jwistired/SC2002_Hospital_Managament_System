@@ -41,11 +41,6 @@ public class PatientController {
         this.view = view;
         loadAppointments();
         loadDoctors();
-
-        //debug print doctors
-        for (Doctor doctor : doctors.values()) {
-            System.out.println(doctor.getUserID());
-        }
     }
 
     /**

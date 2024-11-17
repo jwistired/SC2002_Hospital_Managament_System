@@ -44,3 +44,7 @@ src/views/AdminView.class
 src/views/DoctorView.class
 src/views/PatientView.class
 src/views/PharmacistView.class
+*.class
+*.class
+src/models/Patient.class
+src/models/Administrator.class

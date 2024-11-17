@@ -29,6 +29,7 @@ public class DoctorController {
     private List<InventoryItem> availableMedication;
     private List<String> nameofMedication;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    private final  String[] timeSlots = {"09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00"};
 
     /**
      * Constructs a DoctorController object.
@@ -64,10 +65,13 @@ public class DoctorController {
      * Starts the doctor menu loop.
      */
     public void start() {
-        int choice;
-        do {
+        int choice = 0;
+    boolean validChoice = false;
+    do {
+        try {
             view.displayMenu();
             choice = view.getUserChoice();
+            validChoice = true; // Assume the choice is valid unless an exception is thrown
             switch (choice) {
                 case 1:
                     viewPatientMedicalRecords();
@@ -95,15 +99,19 @@ public class DoctorController {
                     break;
                 default:
                     view.displayMessage("Invalid choice. Please try again.");
+                    validChoice = false; // Set validChoice to false if the choice is invalid
+                }
+            } catch (NumberFormatException e) {
+            view.displayMessage("Invalid input. Please enter a number.");
+            validChoice = false; // Set validChoice to false if an exception is thrown
             }
-        } while (choice != 8);
+        } while (choice != 8 || !validChoice);
     }
 
     /**
-     * Initializes the schedule with time slots for the next 7 days. Placeholder for actual implementation.
+     * Initializes the schedule with time slots for the next 7 days.
      */
     private void initializeSchedule() {
-        String[] timeSlots = {"09:00", "10:00", "11:00", "13:00","14:00", "15:00", "16:00"};
         LocalDate date = LocalDate.now();
         List<String> tempschedule = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
@@ -204,32 +212,57 @@ public class DoctorController {
         view.displayMessage("Available times:");
         view.displayPersonalSchedule(schedule);
 
-        //Set availability on date
-        String dateTimeStr = view.getAvailabilityInput();
+        String AvailabilityAction = view.getAvailabilityAction();
 
-        //Update model
-        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        LocalDateTime dateTime = LocalDateTime.parse(dateTimeStr, inputFormatter);
+        if (AvailabilityAction.equalsIgnoreCase("A")) {
+            String lastEntry = schedule.get(schedule.size() - 1);
 
-        // Convert to the same format used in the schedule
-        String formattedDateTimeStr = dateTime.format(inputFormatter) + " Unavailable";
+            DateTimeFormatter Dateformatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        //find the index of existing date-time and replace it with the new one
-        int index = -1;
-        for (int i = 0; i < schedule.size(); i++) {
-            if (schedule.get(i).contains(dateTime.format(inputFormatter))) {
-                index = i;
-                break;
+            // Parse the last date from the last entry
+            LocalDate lastDate = LocalDate.parse(lastEntry.substring(0, 10), Dateformatter);
+
+            //Add new time slots for the next 7 days
+            List<String> tempschedule = new ArrayList<>();
+            for (int i = 1; i <= 7; i++) {
+                LocalDate currentDate = lastDate.plusDays(i);
+                for (String time : timeSlots) {
+                    LocalTime localTime = LocalTime.parse(time);
+                    LocalDateTime dateTime = LocalDateTime.of(currentDate, localTime);
+                    tempschedule.add(dateTime.format(formatter));
+                }
+            }
+            schedule.addAll(tempschedule);
+            view.displayMessage("Additional 7 days of time slots added.");
+           
+        } else if (AvailabilityAction.equalsIgnoreCase("U")) {
+
+            //Set availability on date
+            String dateTimeStr = view.getAvailabilityInput();
+
+            //Update model
+
+            LocalDateTime dateTime = LocalDateTime.parse(dateTimeStr, formatter);
+
+            // Convert to the same format used in the schedule
+            String formattedDateTimeStr = dateTime.format(formatter) + " Unavailable";
+
+            //find the index of existing date-time and replace it with the new one
+            int index = -1;
+            for (int i = 0; i < schedule.size(); i++) {
+                if (schedule.get(i).contains(dateTime.format(formatter))) {
+                    index = i;
+                    break;
+                }
+            }
+
+            if (index != -1) {
+                schedule.set(index, formattedDateTimeStr);
+                view.displayMessage("Availability updated.");
+            } else {
+                view.displayMessage("Specified date-time was not found in availability.");
             }
         }
-
-        if (index != -1) {
-            schedule.set(index, formattedDateTimeStr);
-            view.displayMessage("Availability updated.");
-        } else {
-            view.displayMessage("Specified date-time was not found in availability.");
-        }
-
         saveSchedule();
     }
 
@@ -247,7 +280,7 @@ public class DoctorController {
 
         //Display list of pending appointments
         List<String> schedule = model.getSchedule();
-        view.displayAppointmentRequests(pendingAppointments);
+        view.displayUpcomingAppointments(pendingAppointments);
 
         //Check if there are any pending appointments
         if (pendingAppointments.isEmpty()) {
@@ -281,12 +314,11 @@ public class DoctorController {
         String decision = view.getDecisionInput();
 
         //Update appointment status
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         for (Appointment appt : pendingAppointments) {
             if (appt.getAppointmentID().equals(appointmentID)) {
                 if (decision.equalsIgnoreCase("A")) {
                     LocalDateTime dateTime = appt.getDateTime();
-                    String formattedDateTimeStr = dateTime.format(formatter) + " Confirmed with" + patients.get(appt.getPatientID()).getName();
+                    String formattedDateTimeStr = dateTime.format(formatter) + " Confirmed with " + patients.get(appt.getPatientID()).getName();
 
                     //Find index of date-time in schedule
                     int index = -1;
@@ -325,7 +357,16 @@ public class DoctorController {
                 upcomingAppointments.add(appt);
             }
         }
-        view.displayAppointmentRequests(upcomingAppointments);
+        
+        if (upcomingAppointments.isEmpty()) {
+            view.displayMessage("No upcoming appointments.");
+            return;
+        }
+
+        view.displayMessage("Upcoming Appointments:");
+        for (Appointment appt : upcomingAppointments) {
+            view.displayAppointmentRequests(appt, patients.get(appt.getPatientID()).getName());
+        }
     }
 
     /**
@@ -355,23 +396,29 @@ public class DoctorController {
                 int choice = -1;
                 int quantity = 0;
 
-                //Loop to add multiple prescriptions until Doctor decides to stop
-                while (choice != 0) {
-                    choice = view.getMedications(nameofMedication);
-                    if (choice > 0 && choice <= nameofMedication.size()) {
-                        String medicationName = nameofMedication.get(choice-1);
-                        quantity = view.getMedicationQuantity();
-                        Prescription newPrescription = new Prescription(medicationName, quantity);
-                        patientPrescriptions.add(newPrescription);
-                        view.displayMessage(medicationName + " added.");
-                    } 
-                    else if (choice == 0) {
-                        break;
-                    }
-                    else{
-                        view.displayMessage("Invalid choice. Please try again.");
+                view.displayMessage("Add prescriptions?");
+
+                String prescriptionChoice = view.getDecisionInput();
+                if (!prescriptionChoice.equalsIgnoreCase("A")) {
+                    //Loop to add multiple prescriptions until Doctor decides to stop
+                    while (choice != 0) {
+                        choice = view.getMedications(nameofMedication);
+                        if (choice > 0 && choice <= nameofMedication.size()) {
+                            String medicationName = nameofMedication.get(choice-1);
+                            quantity = view.getMedicationQuantity();
+                            Prescription newPrescription = new Prescription(medicationName, quantity);
+                            patientPrescriptions.add(newPrescription);
+                            view.displayMessage(medicationName + " added.");
+                        } 
+                        else if (choice == 0) {
+                            break;
+                        }
+                        else{
+                            view.displayMessage("Invalid choice. Please try again.");
+                        }
                     }
                 }
+
 
                 AppointmentOutcome outcome = new AppointmentOutcome(dateOfAppointment, typeOfService, patientPrescriptions, consultationNotes);
                 appt.setOutcome(outcome);

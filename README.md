@@ -6,11 +6,11 @@ For Windows:
 
 For Linux/Mac:
 Compile.sh needs to be given executable permissions first. You can do that by:
-```
+```bash
 chmod +x compile.sh
 ```
 Then to run:
-```
+```bash
 ./compile.sh
 ```
 

@@ -1,6 +1,12 @@
-```bash
-javac -d bin -sourcepath src src/main/HMSApplication.java
-java -cp bin main.HMSApplication
+
+For Windows:
+```
+./compile
+```
+
+For Linux/Mac:
+```
+./compile.sh
 ```
 
 Testing the Application

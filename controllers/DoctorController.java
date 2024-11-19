@@ -50,8 +50,6 @@ public class DoctorController {
         if (patients != null) {
             view.displayMessage("Patients loaded.");
         }
-
-        String scheduleFileName = "Schedule_" + this.model.getUserID() + ".ser";
     }
 
     /**
@@ -140,8 +138,10 @@ public class DoctorController {
             String fileName = "Schedule_" + model.getUserID() + ".ser";
             //Load schedule from serialized file
             model.setSchedule((List<String>) SerializationUtil.deserialize(fileName));
+            view.displayMessage("Schedule loaded.");
         } catch (Exception e) {
             view.displayMessage("Error loading schedule. Schedule does not exist/ is corrupted.");
+            view.displayMessage("Initializing schedule...");
             initializeSchedule();
         }
     }

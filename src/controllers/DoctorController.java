@@ -44,21 +44,13 @@ public class DoctorController {
         loadPatients();
         loadInventory();
         loadtoList();
+        loadSchedule();
 
         if (patients != null) {
             view.displayMessage("Patients loaded.");
         }
 
-        if (this.model.getSchedule() == null) {
-            view.displayMessage("Schedule Missing. Initializing...");
-            initializeSchedule();
-            saveSchedule();
-            view.displayMessage("Schedule initialized.");
-        }
-        else{
-            loadSchedule();
-            view.displayMessage("Schedule loaded.");
-        }
+        String scheduleFileName = "Schedule_" + this.model.getUserID() + ".ser";
     }
 
     /**
@@ -124,6 +116,7 @@ public class DoctorController {
         }
         model.setSchedule(tempschedule);
         view.displayMessage("Schedule initialized.");
+        saveSchedule();
     }
 
     /**
@@ -147,7 +140,8 @@ public class DoctorController {
             //Load schedule from serialized file
             model.setSchedule((List<String>) SerializationUtil.deserialize(fileName));
         } catch (Exception e) {
-            view.displayMessage("Error loading schedule.");
+            view.displayMessage("Error loading schedule. Schedule does not exist/ is corrupted.");
+            initializeSchedule();
         }
     }
 
@@ -480,6 +474,7 @@ public class DoctorController {
             
         } catch (Exception e) {
             System.out.println("Error loading patients.");
+            
         }
     }
 

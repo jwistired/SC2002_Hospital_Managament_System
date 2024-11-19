@@ -49,3 +49,4 @@ src/views/PharmacistView.class
 src/models/Patient.class
 src/models/Administrator.class
 *.class
+src/src/database/Schedule_doc1.ser

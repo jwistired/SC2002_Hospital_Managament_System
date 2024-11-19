@@ -57,9 +57,13 @@ public class PatientView {
         System.out.println("Patient ID: " + record.getPatientID());
         System.out.println("Name: " + record.getName());
         System.out.println("Date Of Birth : "+ record.getDateOfBirth());
+        System.out.println("Gender: " + record.getGender());
         System.out.println("Email: " + record.getEmail());
         System.out.println("Contact Number: " + record.getContactNo());
         System.out.println("Blood Type: " +  record.getBloodType());
+        System.out.println("Past Diagnoses: " + record.getPastDiagnoses());
+        System.out.println("Treatment: " + record.getPastTreatments());
+
         
         // Display other details
     }

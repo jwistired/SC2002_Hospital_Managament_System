@@ -394,7 +394,7 @@ public class DoctorController {
                 view.displayMessage("Add prescriptions?");
 
                 String prescriptionChoice = view.getDecisionInput();
-                if (!prescriptionChoice.equalsIgnoreCase("A")) {
+                if (prescriptionChoice.equalsIgnoreCase("A")) {
                     //Loop to add multiple prescriptions until Doctor decides to stop
                     while (choice != 0) {
                         choice = view.getMedications(nameofMedication);

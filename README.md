@@ -28,5 +28,6 @@ java -jar jdeserialize-1.2.jar src/database/users.ser
 ```
 Javadoc file location:
 	• src\doc
+ 
  .class file location:
 	• bin

@@ -72,6 +72,14 @@ public class Prescription implements Serializable {
         this.quantity = quantity;
     }
 
+    /**
+     * Returns a string representation of the prescription.
+     * The string contains the medication name and quantity.
+     *
+     * @return A string representation of the prescription.
+     */
+
+    @Override
     public String toString() {
         return "Medication: " + medicationName + ", Quantity: " + quantity;
     }

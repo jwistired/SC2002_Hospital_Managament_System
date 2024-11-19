@@ -240,7 +240,6 @@ public class PatientController {
      */
     private void rescheduleAppointment() {
         
-        // Step 1: Fetch all appointments for the patient
         List<Appointment> patientAppointments = new ArrayList<>();
         for (Appointment appt : appointments) {
             if (appt.getPatientID().equals(model.getUserID())) {
@@ -253,11 +252,9 @@ public class PatientController {
             return;
         }
 
-        // Step 2: Display the list of scheduled appointments
         view.displayScheduledAppointments(patientAppointments);
-        String appointmentID = view.getAppointmentIDInput(); // User inputs the appointment ID they want to reschedule
+        String appointmentID = view.getAppointmentIDInput();
 
-        // Step 3: Find the appointment to reschedule
         Appointment appointmentToReschedule = null;
         for (Appointment appt : patientAppointments) {
             if (appt.getAppointmentID().equals(appointmentID)) {
@@ -271,7 +268,6 @@ public class PatientController {
             return;
         }
 
-        // Step 4: Show available slots across all doctors
         Map<String, List<String>> doctorSlots = new HashMap<>();
         for (Map.Entry<String, Doctor> entry : doctors.entrySet()) {
             String doctorID = entry.getKey();
@@ -279,7 +275,6 @@ public class PatientController {
 
             List<String> slots = loadSchedule(doctorID);
 
-            // Only show available slots if there are any
             if (!slots.isEmpty()) {
                 System.out.println("Available slots for " + doctor.getName() + " (" + doctorID + "):");
                 for (String slot : slots) {
@@ -289,8 +284,7 @@ public class PatientController {
             }
         }
 
-        // Step 5: Ask the user to choose a new doctor and slot
-        String newDoctorID = view.getDoctorIDInput(); // User inputs doctor ID for rescheduling
+        String newDoctorID = view.getDoctorIDInput();
         List<String> availableSlotsForDoctor = doctorSlots.get(newDoctorID);
         
         if (availableSlotsForDoctor == null || availableSlotsForDoctor.isEmpty()) {
@@ -298,13 +292,9 @@ public class PatientController {
             return;
         }
 
-        // Display available slots for the chosen doctor
-        //view.displayAvailableSlots(availableSlotsForDoctor);
-
         String newDateTimeStr = view.getAppointmentDateTime();
         LocalDateTime newDateTime;
         
-        // Step 6: Parse the new date and time entered by the user
         try {
             newDateTime = LocalDateTime.parse(newDateTimeStr, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         } catch (Exception e) {
@@ -312,14 +302,12 @@ public class PatientController {
             return;
         }
 
-        // Step 7: Check if the new date and time is available
         String formattedNewDateTime = newDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         if (!availableSlotsForDoctor.contains(formattedNewDateTime)) {
             view.displayMessage("The selected time slot is not available. Please choose a different time.");
             return;
         }
 
-        // Step 8: Check if there's already an existing appointment at that time
         for (Appointment existingAppointment : appointments) {
             if (existingAppointment.getPatientID().equals(model.getUserID()) && 
                 existingAppointment.getDateTime().equals(newDateTime)) {
@@ -328,17 +316,17 @@ public class PatientController {
             }
         }
 
-        // Step 9: Revert the old appointment slot back to availability
         String oldDateTime = appointmentToReschedule.getDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         availableSlotsForDoctor.add(oldDateTime);
 
-        // Step 10: Update the appointment with the new date and time
         appointmentToReschedule.setDateTime(newDateTime);
 
-        // Remove the newly chosen slot from available slots
+        if (appointmentToReschedule.getStatus().equals("confirmed")) {
+            appointmentToReschedule.setStatus("pending");
+        }
+
         availableSlotsForDoctor.remove(formattedNewDateTime);
 
-        // Save the updated appointments and available slots
         saveAppointments();
         
         view.displayMessage("Appointment rescheduled successfully.");

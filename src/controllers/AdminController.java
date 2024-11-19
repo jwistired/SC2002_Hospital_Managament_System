@@ -1,20 +1,21 @@
 package controllers;
 
-import models.Administrator;
-import models.User;
-import models.Doctor;
-import models.Pharmacist;
-import models.Appointment;
-import models.InventoryItem;
-import views.AdminView;
-import utils.SerializationUtil;
-
-import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import models.Administrator;
+import models.Appointment;
+import models.Doctor;
+import models.InventoryItem;
+import models.Pharmacist;
+import models.User;
+import utils.SerializationUtil;
+import views.AdminView;
 
 /**
- * Controller class for handling administrator-related operations.
+ * Controller class for handling administrator-related operations in the hospital management system.
+ * This class provides functionalities for managing hospital staff, viewing and managing doctor schedules,
+ * handling appointments, and managing medication inventory.
  */
 public class AdminController {
     private Administrator model;
@@ -40,7 +41,7 @@ public class AdminController {
     }
 
     /**
-     * Starts the administrator menu loop.
+     * Starts the administrator menu loop, allowing the admin to interact with various options.
      */
     public void start() {
         int choice;
@@ -70,7 +71,7 @@ public class AdminController {
     }
 
     /**
-     * Loads doctors from the users map.
+     * Loads doctor information from the users map and initializes the doctors map.
      */
     @SuppressWarnings("unchecked")
     private void loadDoctors() {
@@ -83,7 +84,8 @@ public class AdminController {
     }
 
     /**
-     * Displays the doctor schedules menu.
+     * Displays a menu for managing doctor schedules, including viewing all schedules
+     * or an individual doctor's schedule.
      */
     private void viewDoctorSchedulesMenu() {
         int choice;
@@ -125,16 +127,15 @@ public class AdminController {
     }
 
     /**
-    * Displays the schedule of an individual doctor.
-    *
-    * @param doctorID The ID of the doctor whose schedule is to be viewed.
-    */
-
-    public void viewIndividualDoctorSchedule(String doctorID){
+     * Displays the schedule of an individual doctor.
+     *
+     * @param doctorID The ID of the doctor whose schedule is to be viewed.
+     */
+    public void viewIndividualDoctorSchedule(String doctorID) {
         Doctor doctor = doctors.get(doctorID);
         if (doctor == null) {
-        view.displayMessage("Doctor with ID " + doctorID + " not found.");
-        return;
+            view.displayMessage("Doctor with ID " + doctorID + " not found.");
+            return;
         }
 
         // Load the doctor's schedule from a serialized file
@@ -148,8 +149,6 @@ public class AdminController {
         }
         view.displayMessage("Schedule for Dr. " + doctor.getName() + " (ID: " + doctorID + "):");
         view.displayDoctorSchedule(schedule, appointments, doctorID);
-        
-
     }
 
     /**
@@ -167,7 +166,6 @@ public class AdminController {
             view.displayMessage("Error loading schedule for Dr. " + doctor.getName());
         }
     }
-
 
     /**
      * Manages hospital staff by adding, updating, or removing staff members.
@@ -200,10 +198,9 @@ public class AdminController {
     }
 
     /**
-    * Displays a list of all staff members (Doctor, Pharmacist, Admin).
-    */
-    private void viewStaffMembers(){
-        // Filter users to include only Doctor, Pharmacist, and Admin
+     * Displays a list of all staff members, including doctors, pharmacists, and administrators.
+     */
+    private void viewStaffMembers() {
         List<User> staffList = new ArrayList<>();
 
         for (User user : users.values()) {
@@ -217,12 +214,15 @@ public class AdminController {
             return;
         }
 
-        view.displayStaffList(staffList);    
-    
+        view.displayStaffList(staffList);
     }
 
+
     /**
-     * Adds a new staff member.
+     * Adds a new staff member to the system.
+     * Prompts the user for user ID, name, password, and role, and validates the input.
+     * Creates a new user if the role is valid and the user ID does not already exist.
+     * Updates the users and doctors map if applicable and persists the changes.
      */
     private void addStaffMember() {
         String userID = view.getUserIDInput();
@@ -255,7 +255,9 @@ public class AdminController {
     }
 
     /**
-     * Updates an existing staff member.
+     * Updates an existing staff member's details.
+     * Prompts the user for the user ID, validates its existence, and displays current details.
+     * Updates the user's name and password and persists the changes.
      */
     private void updateStaffMember() {
         String userID = view.getUserIDInput();
@@ -294,7 +296,9 @@ public class AdminController {
     }
 
     /**
-     * Removes a staff member.
+     * Removes an existing staff member.
+     * Prompts the user for the user ID and validates its existence.
+     * Removes the user and updates the doctors map if necessary, then persists the changes.
      */
     private void removeStaffMember() {
         String userID = view.getUserIDInput();
@@ -309,7 +313,8 @@ public class AdminController {
     }
 
     /**
-     * Manages medication inventory and approves replenishment requests.
+     * Manages the medication inventory, allowing the user to add, update, remove,
+     * view inventory items, and approve replenishment requests.
      */
     private void manageMedicationInventoryAndReplenishment() {
         int choice;
@@ -343,7 +348,9 @@ public class AdminController {
 
 
     /**
-     * Adds a new inventory item.
+     * Adds a new inventory item to the system.
+     * Validates input for medication name, stock level, and low stock alert level.
+     * Ensures the medication does not already exist before adding it.
      */
     private void addInventoryItem() {
         String medicationName = view.getMedicationNameInput().trim();
@@ -387,6 +394,8 @@ public class AdminController {
 
     /**
      * Updates an existing inventory item.
+     * Validates input for new stock levels and low stock alert levels.
+     * Ensures the item exists in inventory before applying changes.
      */
     private void updateInventoryItem() {
         // Prompt and retrieve the medication name, trimming any leading/trailing spaces
@@ -447,7 +456,8 @@ public class AdminController {
     
 
     /**
-     * Removes an inventory item.
+     * Removes an inventory item from the system.
+     * Prompts for the medication name and validates its existence before removal.
      */
     private void removeInventoryItem() {
         String medicationName = view.getMedicationNameInput();
@@ -463,7 +473,8 @@ public class AdminController {
     }
 
     /**
-     * Displays all inventory items.
+     * Displays all inventory items to the user.
+     * If the inventory is empty, an appropriate message is displayed.
      */
     private void viewInventoryItems() {
         if (inventory.isEmpty()) {
@@ -474,7 +485,9 @@ public class AdminController {
     }
 
     /**
-     * Approves a replenishment request by updating inventory quantities.
+     * Approves a pending replenishment request for a specific inventory item.
+     * Updates the stock level and resets the replenish request amount.
+     * Validates the existence of the item and ensures a valid request exists.
      */
     private void approveReplenishmentRequest() {
         List<InventoryItem> pendingRequests = getPendingReplenishmentRequests();
@@ -499,9 +512,9 @@ public class AdminController {
     }
 
     /**
-     * Retrieves inventory items with pending replenishment requests.
+     * Retrieves a list of inventory items with pending replenishment requests.
      *
-     * @return List of inventory items with replenishRequestAmount > 0.
+     * @return A list of inventory items where replenishRequestAmount > 0.
      */
     private List<InventoryItem> getPendingReplenishmentRequests() {
         List<InventoryItem> pending = new ArrayList<>();
@@ -529,7 +542,8 @@ public class AdminController {
     }
 
     /**
-     * Displays appointment details.
+     * Displays all appointment details to the user.
+     * If no appointments exist, a message is displayed.
      */
     private void viewAppointmentDetails() {
         if (appointments.isEmpty()) {
@@ -540,7 +554,8 @@ public class AdminController {
     }
 
     /**
-     * Loads users from the serialized file.
+     * Loads user data from a serialized file.
+     * Initializes the users map if no data exists or if an error occurs.
      */
     private void loadUsers() {
         try {
@@ -555,7 +570,7 @@ public class AdminController {
     }
 
     /**
-     * Saves users to the serialized file.
+     * Saves the current user data to a serialized file.
      */
     private void saveUsers() {
         try {
@@ -566,7 +581,8 @@ public class AdminController {
     }
 
     /**
-     * Loads appointments from the serialized file.
+     * Loads appointment data from a serialized file.
+     * Initializes the appointments list if no data exists or if an error occurs.
      */
     private void loadAppointments() {
         try {
@@ -591,7 +607,8 @@ public class AdminController {
     }
 
     /**
-     * Loads inventory from the serialized file.
+     * Loads inventory data from a serialized file.
+     * Initializes the inventory list if no data exists or if an error occurs.
      */
     private void loadInventory() {
         try {

@@ -66,7 +66,8 @@ public class PharmacistController {
     }
 
     /**
-     * Displays appointment outcome records, including prescriptions.
+     * Displays all appointment outcome records, including prescriptions.
+     * Fetches data from appointments and displays them through the view.
      */
     private void viewAppointmentOutcomeRecords() {
         for (Appointment appt : appointments) {
@@ -86,9 +87,10 @@ public class PharmacistController {
         }
     }
 
-
     /**
-     * Allows the pharmacist to update the status of a prescription.
+     * Updates the status of a prescription.
+     * Prompts the user for medication name, appointment ID, and quantity, 
+     * then verifies stock availability and updates the status if applicable.
      */
     private void updatePrescriptionStatus() {
         String medicationName = view.getMedicationNameInput();
@@ -101,21 +103,23 @@ public class PharmacistController {
             if (outcome != null) {
                 List<Prescription> prescriptions = outcome.getPrescriptions();
                 for (Prescription presc : prescriptions) {
-                    if (presc.getMedicationName().equalsIgnoreCase(medicationName) && presc.getQuantity() == quantity && !presc.getStatus().equals("dispensed") && appt.getAppointmentID().equalsIgnoreCase(apptIDinput)) {
-                        for (InventoryItem item : inventory){
-                            if (item.getStockLevel() >= quantity)
-                            {
+                    if (presc.getMedicationName().equalsIgnoreCase(medicationName) &&
+                        presc.getQuantity() == quantity && 
+                        !presc.getStatus().equals("dispensed") &&
+                        appt.getAppointmentID().equalsIgnoreCase(apptIDinput)) {
+                        
+                        for (InventoryItem item : inventory) {
+                            if (item.getStockLevel() >= quantity) {
                                 item.setStockLevel(item.getStockLevel() - quantity);
-                                view.displayMessage("Appointment ID: " + apptIDinput);
                                 presc.setStatus("dispensed");
                                 saveInventory();
+                                view.displayMessage("Appointment ID: " + apptIDinput);
                                 found = true;
                                 break;
-                            }
-                            else{
+                            } else {
                                 view.displayMessage("Insufficient stock for " + medicationName + ".");
                             }
-                        }    
+                        }
                     }
                 }
             }
@@ -123,21 +127,24 @@ public class PharmacistController {
 
         if (found) {
             saveAppointments();
-            view.displayMessage("Prescribed " + quantity + "units of " + medicationName + ". Status Updated to 'dispensed'.");
+            view.displayMessage("Prescribed " + quantity + " units of " + medicationName + ". Status updated to 'dispensed'.");
         } else {
             view.displayMessage("Prescription not found or already dispensed.");
         }
     }
 
     /**
-     * Displays the medication inventory.
+     * Displays the current medication inventory.
+     * Lists all inventory items along with their stock levels.
      */
     private void viewMedicationInventory() {
         view.displayInventory(inventory);
     }
 
     /**
-     * Allows the pharmacist to submit a replenishment request.
+     * Submits a replenishment request for a specific medication.
+     * Prompts the user for medication name and quantity, then marks the 
+     * item for replenishment if it exists in the inventory.
      */
     private void submitReplenishmentRequest() {
         String medicationName = view.getMedicationNameInput();
@@ -146,7 +153,6 @@ public class PharmacistController {
         boolean found = false;
         for (InventoryItem item : inventory) {
             if (item.getMedicationName().equalsIgnoreCase(medicationName)) {
-                //Request needs to be approved by admin
                 item.setReplenishRequestAmount(quantity);
                 saveInventory();
                 view.displayMessage("Replenishment request submitted.");
@@ -160,7 +166,8 @@ public class PharmacistController {
     }
 
     /**
-     * Loads appointments from the serialized file.
+     * Loads appointment data from a serialized file.
+     * If no file is found or an error occurs, initializes an empty appointment list.
      */
     private void loadAppointments() {
         try {
@@ -171,7 +178,8 @@ public class PharmacistController {
     }
 
     /**
-     * Saves appointments to the serialized file.
+     * Saves appointment data to a serialized file.
+     * Handles exceptions that occur during the saving process.
      */
     private void saveAppointments() {
         try {
@@ -182,7 +190,8 @@ public class PharmacistController {
     }
 
     /**
-     * Loads inventory from the serialized file.
+     * Loads inventory data from a serialized file.
+     * If no file is found or an error occurs, initializes an empty inventory list.
      */
     private void loadInventory() {
         try {
@@ -193,7 +202,8 @@ public class PharmacistController {
     }
 
     /**
-     * Saves inventory to the serialized file.
+     * Saves inventory data to a serialized file.
+     * Handles exceptions that occur during the saving process.
      */
     private void saveInventory() {
         try {
@@ -206,7 +216,7 @@ public class PharmacistController {
     /**
      * Retrieves all prescriptions from appointment outcomes.
      *
-     * @return List of all prescriptions.
+     * @return A list of all prescriptions associated with appointments.
      */
     private List<Prescription> getAllPrescriptions() {
         List<Prescription> allPrescriptions = new ArrayList<>();

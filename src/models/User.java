@@ -2,11 +2,12 @@ package models;
 
 import java.io.Serializable;
 import java.util.HashMap;
-
 import utils.SerializationUtil;
 
 /**
  * Abstract class representing a user in the hospital management system.
+ * This class serves as the base class for different types of users (e.g., Patient, Doctor, Pharmacist).
+ * It includes common user properties such as ID, name, password, role, and personal details.
  */
 public abstract class User implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -23,12 +24,13 @@ public abstract class User implements Serializable {
     protected boolean firstLogin;
 
     /**
-     * Constructs a User object.
+     * Constructs a User object with the specified user ID, name, password, and role.
+     * The password is hashed and salted for security.
      *
      * @param userID   The user's ID.
      * @param name     The user's name.
      * @param password The user's password.
-     * @param role     The user's role.
+     * @param role     The user's role (e.g., "Patient", "Doctor", etc.).
      */
     public User(String userID, String name, String password, String role) {
         this.userID = userID;
@@ -41,27 +43,56 @@ public abstract class User implements Serializable {
 
     // Getters and Setters
 
+    /**
+     * Gets the user's date of birth.
+     *
+     * @return The user's date of birth.
+     */
     public String getDateOfBirth() {
         return dateOfBirth;
     }
 
+    /**
+     * Gets the user's gender.
+     *
+     * @return The user's gender.
+     */
     public String getGender() {
         return gender;
     }
 
+    /**
+     * Gets the user's blood type.
+     *
+     * @return The user's blood type.
+     */
     public String getBloodType() {
         return bloodType;
     }
 
-
+    /**
+     * Gets the user's ID.
+     *
+     * @return The user's ID.
+     */
     public String getUserID() {
         return userID;
     }
 
+    /**
+     * Gets the user's name.
+     *
+     * @return The user's name.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Gets the hashed password of the user.
+     *
+     * @return The hashed password.
+     */
     public String getHashedPassword() {
         return hashedPassword;
     }
@@ -75,26 +106,56 @@ public abstract class User implements Serializable {
         this.hashedPassword = hashedPassword;
     }
 
+    /**
+     * Gets the salt associated with the user's password.
+     *
+     * @return The salt for password hashing.
+     */
     public String getSalt() {
         return salt;
     }
 
+    /**
+     * Gets the user's role.
+     *
+     * @return The user's role (e.g., "Patient", "Doctor", etc.).
+     */
     public String getRole() {
         return role;
     }
 
+    /**
+     * Gets the user's contact number.
+     *
+     * @return The user's contact number.
+     */
     public String getContactNumber() {
         return contactNo;
     }
 
+    /**
+     * Sets the user's contact number.
+     *
+     * @param contactNo The new contact number.
+     */
     public void setContactNo(String contactNo) {
         this.contactNo = contactNo;
     }
 
+    /**
+     * Gets the user's email address.
+     *
+     * @return The user's email address.
+     */
     public String getEmail() {
         return email;
     }
 
+    /**
+     * Sets the user's email address.
+     *
+     * @param email The new email address.
+     */
     public void setEmail(String email) {
         this.email = email;
     }
@@ -118,7 +179,7 @@ public abstract class User implements Serializable {
     }
 
     /**
-     * Sets the user's salt.
+     * Sets the user's salt for password hashing.
      *
      * @param salt The new salt.
      */
@@ -126,6 +187,10 @@ public abstract class User implements Serializable {
         this.salt = salt;
     }
 
+    /**
+     * Saves the user's information into the persistent storage (serialization file).
+     * This updates the serialized "users.ser" file with the current user's data.
+     */
     public void saveModel() {
         try {
             HashMap<String, User> users = (HashMap<String, User>) SerializationUtil.deserialize("users.ser");

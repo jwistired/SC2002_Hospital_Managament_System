@@ -7,12 +7,16 @@ import models.Prescription;
 
 /**
  * Class representing the pharmacist view in the hospital management system.
+ * This class provides methods for the pharmacist to interact with the system,
+ * including managing prescriptions, updating medication inventory, and submitting
+ * replenishment requests.
  */
 public class PharmacistView {
     private Scanner scanner;
 
     /**
      * Constructs a PharmacistView object.
+     * Initializes the scanner for user input.
      */
     public PharmacistView() {
         scanner = new Scanner(System.in);
@@ -20,6 +24,8 @@ public class PharmacistView {
 
     /**
      * Displays the pharmacist menu.
+     * This menu allows the pharmacist to select options for viewing appointment outcomes,
+     * updating prescription statuses, managing medication inventory, and submitting replenishment requests.
      */
     public void displayMenu() {
         System.out.println("\nPharmacist Menu:");
@@ -32,8 +38,9 @@ public class PharmacistView {
 
     /**
      * Gets the user's menu choice.
+     * Prompts the user to enter their choice and returns the selected option as an integer.
      *
-     * @return The user's choice.
+     * @return The user's choice as an integer.
      */
     public int getUserChoice() {
         System.out.print("Enter your choice: ");
@@ -42,8 +49,9 @@ public class PharmacistView {
 
     /**
      * Displays a list of prescriptions.
+     * This method displays the medication name, quantity, and status for each prescription.
      *
-     * @param prescriptions The list of prescriptions.
+     * @param prescriptions The list of prescriptions to display.
      */
     public void displayPrescriptions(List<Prescription> prescriptions) {
         System.out.println("\nPrescriptions:");
@@ -57,8 +65,9 @@ public class PharmacistView {
 
     /**
      * Gets the medication name input from the user.
+     * Prompts the user to enter the medication name and returns the input.
      *
-     * @return The medication name.
+     * @return The medication name as a string.
      */
     public String getMedicationNameInput() {
         System.out.print("Enter Medication Name: ");
@@ -67,8 +76,9 @@ public class PharmacistView {
 
     /**
      * Displays the medication inventory.
+     * This method shows the medication name, stock level, and low stock alert level for each inventory item.
      *
-     * @param inventory The list of inventory items.
+     * @param inventory The list of inventory items to display.
      */
     public void displayInventory(List<InventoryItem> inventory) {
         System.out.println("\nMedication Inventory:");
@@ -82,8 +92,9 @@ public class PharmacistView {
 
     /**
      * Gets the quantity input from the user.
+     * Prompts the user to enter the quantity for prescriptions or replenishment requests.
      *
-     * @return The quantity.
+     * @return The quantity as an integer.
      */
     public int getQuantityInput() {
         System.out.print("Enter Quantity: ");
@@ -92,15 +103,22 @@ public class PharmacistView {
 
     /**
      * Displays a message to the user.
+     * Prints a specified message to the console.
      *
      * @param message The message to display.
      */
     public void displayMessage(String message) {
         System.out.println(message);
     }
+
+    /**
+     * Gets the appointment ID input from the user.
+     * Prompts the user to enter an appointment ID to dispense medication.
+     *
+     * @return The appointment ID as a string.
+     */
     public String getAppointmentIDInput() {
         System.out.print("Enter AppointmentID to dispense: ");
         return scanner.nextLine();
     }
-
 }

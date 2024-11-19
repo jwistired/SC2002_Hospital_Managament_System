@@ -19,7 +19,8 @@ import views.DoctorView;
 
 
 /**
- * Controller class for handling doctor-related operations.
+ * Controller class responsible for managing doctor-related operations such as appointment scheduling,
+ * medical record management, and patient interactions.
  */
 public class DoctorController {
     private Doctor model;

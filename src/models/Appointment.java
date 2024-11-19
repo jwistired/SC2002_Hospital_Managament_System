@@ -11,6 +11,7 @@ public class Appointment implements Serializable {
     private String appointmentID;
     private String patientID;
     private String doctorID;
+    private String doctorName;  // Add doctorName property
     private LocalDateTime dateTime;
     private String status; // confirmed, canceled, completed
     private AppointmentOutcome outcome;
@@ -43,6 +44,14 @@ public class Appointment implements Serializable {
 
     public String getDoctorID() {
         return doctorID;
+    }
+
+    public String getDoctorName() {
+        return doctorName;  // Getter for doctorName
+    }
+
+    public void setDoctorName(String doctorName) {
+        this.doctorName = doctorName;  // Setter for doctorName
     }
 
     public LocalDateTime getDateTime() {

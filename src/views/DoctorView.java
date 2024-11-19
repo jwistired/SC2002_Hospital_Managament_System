@@ -3,6 +3,7 @@ package views;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 import models.Appointment;
@@ -29,7 +30,7 @@ public class DoctorView {
         System.out.println("1. View Patient Medical Records");
         System.out.println("2. Update Patient Medical Records");
         System.out.println("3. View Personal Schedule");
-        System.out.println("4. Set Availability for Appointments");
+        System.out.println("4. Add/Set Availability for Appointments");
         System.out.println("5. Accept or Decline Appointment Requests");
         System.out.println("6. View Upcoming Appointments");
         System.out.println("7. Record Appointment Outcome");
@@ -65,8 +66,9 @@ public class DoctorView {
         List<String> pastTreatments = record.getPastTreatments();
         if (!pastDiagnoses.isEmpty())
         {
+            displayMessage("Past Diagnoses:");
             for(int i = 0; i < pastDiagnoses.size(); i++){
-                System.out.println("Past Diagnosis: " + pastDiagnoses.get(i));
+                displayMessage((i+1) +") " + pastDiagnoses.get(i));
                 }
         }
         else{
@@ -75,8 +77,9 @@ public class DoctorView {
 
         if (!pastTreatments.isEmpty())
         {
+            System.out.println("Past Treatments: ");
             for(int i = 0; i < pastTreatments.size(); i++){
-                System.out.println("Past Treatment: " + pastTreatments.get(i));
+                displayMessage((i+1) +") " + pastTreatments.get(i));
                 }
         }
         else{
@@ -148,26 +151,60 @@ public class DoctorView {
         return dateTimeStr;
     }
 
+    /**
+     * Gets the availability action input from the user.
+     * 
+     * @param action The availability action.
+     * @param valid The boolean value to check if the input is valid.
+     *
+     * @return The availability action.
+     */
+    public String getAvailabilityAction(){
+        String action ="";
+        boolean valid = false;
+        while (!valid){
+            System.out.print("Enter 'A' to add availability or 'U' to update availability: ");
+            try{
+            action = scanner.nextLine();
+            if (action.equalsIgnoreCase("A") || action.equalsIgnoreCase("U")){
+                valid = true;
+            }
+            else{
+                System.out.println("Invalid input. Please enter 'A' or 'U'.");
+            }
+        }
+        catch (InputMismatchException e){
+            System.out.println("Invalid input. Please enter 'A' or 'U'.");
+            scanner.nextLine();
+        }
+        }
 
-
-     //Original Code
-    // public String getAvailabilityInput() {
-    //     //To be changed once confirmed
-    //     System.out.print("Enter Availability Time (YYYY-MM-DD HH:MM): ");
-    //     scanner.nextLine();
-    //     return scanner.nextLine();
-    // }
+        return action;
+    }
 
     /**
      * Displays appointment requests for the doctor.
      *
-     * @param appointments The list of appointment requests.
+     * @param appointments The  appointment details.
      */
-    public void displayAppointmentRequests(List<Appointment> appointments) {
-        System.out.println("\nAppointment Requests:");
+    public void displayAppointmentRequests(Appointment appt, String patientName) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        String dateTimeStr = appt.getDateTime().format(formatter);
+        System.out.println("Appointment ID: " + appt.getAppointmentID() + " | Patient Name: " + patientName + " | Date and Time: " + dateTimeStr);
+    }
+
+    /**
+     * Displays the list of upcoming appointments for the doctor.
+     *
+     * @param appointments The list of upcoming appointments.
+     */
+
+    public void displayUpcomingAppointments(List<Appointment> appointments) {
+        System.out.println("\nUpcoming Appointments:");
         for (Appointment appt : appointments) {
-            System.out.println("Appointment ID: " + appt.getAppointmentID());
-            // Display other details
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            String dateTimeStr = appt.getDateTime().format(formatter);
+            System.out.println("Appointment ID: " + appt.getAppointmentID() + " | Patient Name: " + appt.getPatientID() + " | Date and Time: " + dateTimeStr);
         }
     }
 
@@ -190,24 +227,17 @@ public class DoctorView {
         System.out.print("Accept or Decline (A/D): ");
         return scanner.nextLine();
     }
-
-    public String getPrescriptionDecision() {
-        System.out.print("Add this prescription? (Y/N): ");
+    
+    /**
+     * Gets the type of service input from the user.
+     *
+     *@return The name of service provided
+     */
+    public String getTypeOfServiceInput(){
+        System.out.print("Enter the type of service: ");
         return scanner.nextLine();
     }
 
-    public String addPrescription() {
-        System.out.print("Enter Prescription: ");
-        return scanner.nextLine();
-    }
-
-    // public List<String> displayPrescriptionList(List<String> prescriptions) {
-    //     System.out.println("Prescriptions:");
-    //     for (String prescription : prescriptions) {
-    //         System.out.println(prescription);
-    //     }
-    //     return prescriptions;
-    // }
 
     /**
      * Displays a message to the user.
@@ -218,15 +248,28 @@ public class DoctorView {
         System.out.println(message);
     }
 
+
+    /**
+     * Displays the list of medications available.
+     *
+     * @param medication Stores the list of names for medicine extracted from inventory.
+     */
+
     // Display list of available medications
     public int getMedications(List<String> medications) {
         System.out.println("\nMedication Inventory:");
         for (int i = 0; i < medications.size(); i++) {
             System.out.println((i+1) + ") " + medications.get(i));
         }
-        System.out.print("Enter the index of the medication: ");
+        System.out.print("Enter the index of the medication [0 to exit]: ");
         return Integer.parseInt(scanner.nextLine());
     }
+
+    /**
+     * Gets the quantity of the medication.
+     *
+     * @return The quantity of the medication.
+     */
 
     // Get the quantity of the medication
     public int getMedicationQuantity() {

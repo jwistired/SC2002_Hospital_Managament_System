@@ -40,11 +40,6 @@ public class PatientController {
         this.view = view;
         loadAppointments();
         loadDoctors();
-
-        //debug print doctors
-        for (Doctor doctor : doctors.values()) {
-            System.out.println(doctor.getUserID());
-        }
     }
 
     /**
@@ -134,6 +129,7 @@ public class PatientController {
     }
     }
         
+
     /**
      * Retrieves a list of appointments scheduled for the patient.
      *
@@ -391,12 +387,26 @@ public class PatientController {
      * Displays the patient's scheduled appointments.
      */
     private void viewScheduledAppointments() {
-        List<Appointment> patientAppointments = new ArrayList<>();
-        for (Appointment appt : appointments) {
-            if (appt.getPatientID().equals(model.getUserID())) {
-                patientAppointments.add(appt);
-            }
+        List<Appointment> patientAppointments = appointments.stream()
+        .filter(appt -> !appt.getStatus().equals("completed"))  // Filter out completed appointments
+        .filter(appt -> appt.getPatientID().equals(model.getUserID()))  // Filter appointments for the current patient
+        .collect(Collectors.toList());  // Collect the results back into a list
+
+        if (patientAppointments.isEmpty()) {
+            view.displayMessage("You have no scheduled appointments.");
+            return;
         }
+        
+        for (Appointment appt : patientAppointments) {
+            String doctorID = appt.getDoctorID();
+            Doctor doctor = doctors.get(doctorID);  // Retrieve the doctor object based on doctorID
+            if (doctor != null) {
+                appt.setDoctorName(doctor.getName());  // Set the doctor's name in the appointment object
+            } else {
+                appt.setDoctorName("Unknown Doctor");  // Handle the case where the doctor is not found
+            }
+        }    
+        // Display the filtered list of appointments with doctor names
         view.displayScheduledAppointments(patientAppointments);
     }
 
@@ -435,9 +445,9 @@ public class PatientController {
     private void loadAppointments() {
         try {
             appointments = (List<Appointment>) SerializationUtil.deserialize("appointments.ser");
-            appointments = appointments.stream()
+            /*appointments = appointments.stream()
                                    .filter(appt -> !appt.getStatus().equals("completed"))
-                                   .collect(Collectors.toList());
+                                   .collect(Collectors.toList()); */
         } catch (Exception e) {
             appointments = new ArrayList<>();
         }
@@ -477,46 +487,17 @@ public class PatientController {
      */    
     private List<String> loadSchedule(String docid) {
         List<String> schedule = new ArrayList<>();
-        try {
-            String fileName = "Schedule_" + docid + ".ser";
-            // Load schedule from serialized file
-            schedule = ((List<String>) SerializationUtil.deserialize(fileName));
-        } catch (Exception e) {
-            System.out.println("Error loading schedule: " + e.getMessage());
-        }
-        return schedule;
+    try {
+        String fileName = "Schedule_" + docid + ".ser";
+        // Load schedule from serialized file
+        schedule = (List<String>) SerializationUtil.deserialize(fileName);
+        
+        // Remove slots that contain "Unavailable" at the end of the string
+        schedule.removeIf(slot -> slot.trim().endsWith("Unavailable"));
+        
+    } catch (Exception e) {
+        System.out.println("Error loading schedule: " + e.getMessage());
     }
-
-    /**
-     * Gets the doctor's schedule for display.
-     *
-     * @param doctorID The ID of the doctor.
-     * @return The list of available slots for the doctor.
-     */
-    public List<String> getDoctorSchedule(String doctorID) {
-        try {
-            String fileName = "Schedule_" + doctorID + ".ser";
-            // Deserialize the schedule
-            List<String> schedule = (List<String>) SerializationUtil.deserialize(fileName);
-            
-            // Filter out the slots that are marked as "unavailable"
-            List<String> availableSlots = new ArrayList<>();
-            if (schedule != null) {
-                // Add doctor name as the first entry in the list
-                availableSlots.add("Doctor: " + doctor.getName());
-                // Filter out the slots that are marked as "unavailable"
-                for (String slot : schedule) {
-                    // Exclude slots that contain "Unavailable"
-                    if (!slot.contains("Unavailable")) {
-                        availableSlots.add(slot);
-                    }
-                }
-            }
-    
-            return availableSlots;
-        } catch (Exception e) {
-            System.out.println("Error loading schedule for doctor with ID: " + doctorID);
-            return null;
-        }
+    return schedule;
     }
 }

@@ -6,6 +6,7 @@ import java.util.List;
 
 /**
  * Class representing a medical record of a patient.
+ * This class stores personal information, past diagnoses, and treatments of a patient.
  */
 public class MedicalRecord implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -20,16 +21,16 @@ public class MedicalRecord implements Serializable {
     private List<String> pastTreatments;
 
     /**
-     * Constructs a MedicalRecord object.
+     * Constructs a MedicalRecord object with the specified patient information.
      *
      * @param patientID The patient's ID.
      * @param name      The patient's name.
      * @param dateOfBirth The patient's date of birth.
      * @param gender    The patient's gender.
      * @param bloodType The patient's blood type.
-     * @param contactInfo The patient's contact information.
+     * @param email     The patient's email address.
+     * @param contactNo The patient's contact number.
      */
-
     public MedicalRecord(String patientID, String name, String dateOfBirth, String gender, String bloodType, String email, String contactNo){
         this.patientID = patientID;
         this.name = name;
@@ -48,56 +49,119 @@ public class MedicalRecord implements Serializable {
 
     // Getters and Setters
 
+    /**
+     * Gets the patient's ID.
+     *
+     * @return The patient's ID.
+     */
     public String getPatientID() {
         return patientID;
     }
 
+    /**
+     * Gets the patient's name.
+     *
+     * @return The patient's name.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Gets the patient's date of birth.
+     *
+     * @return The patient's date of birth.
+     */
     public String getDateOfBirth() {
         return dateOfBirth;
     }
 
+    /**
+     * Gets the patient's gender.
+     *
+     * @return The patient's gender.
+     */
     public String getGender() {
         return gender;
     }
 
+    /**
+     * Gets the patient's blood type.
+     *
+     * @return The patient's blood type.
+     */
     public String getBloodType() {
         return bloodType;
     }
 
-    public String  getEmail() {
+    /**
+     * Gets the patient's email address.
+     *
+     * @return The patient's email address.
+     */
+    public String getEmail() {
         return email;
     }
 
-    public  String getContactNo() {
+    /**
+     * Gets the patient's contact number.
+     *
+     * @return The patient's contact number.
+     */
+    public String getContactNo() {
         return contactNo;
     }
 
+    /**
+     * Sets the patient's email address.
+     *
+     * @param email The new email address of the patient.
+     */
     public void setEmail(String email){
         this.email = email;
     }
 
+    /**
+     * Sets the patient's contact number.
+     *
+     * @param contactNo The new contact number of the patient.
+     */
     public void setContactNo(String contactNo){
         this.contactNo = contactNo;
     }
 
+    /**
+     * Gets the list of the patient's past diagnoses.
+     *
+     * @return The list of past diagnoses.
+     */
     public List<String> getPastDiagnoses() {
         return pastDiagnoses;
     }
 
+    /**
+     * Gets the list of the patient's past treatments.
+     *
+     * @return The list of past treatments.
+     */
     public List<String> getPastTreatments() {
         return pastTreatments;
     }
 
-    // Other getters and setters for the fields
-
+    /**
+     * Adds a diagnosis to the patient's medical record.
+     *
+     * @param diagnosis The diagnosis to be added.
+     */
     public void addDiagnosis(String diagnosis) {
         pastDiagnoses.add(diagnosis);
     }
 
+    /**
+     * Adds a treatment to the patient's medical record.
+     *
+     * @param treatment The treatment to be added.
+     */
     public void addTreatment(String treatment) {
         pastTreatments.add(treatment);
     }

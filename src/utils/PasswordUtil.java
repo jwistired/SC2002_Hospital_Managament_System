@@ -6,11 +6,15 @@ import java.security.SecureRandom;
 
 /**
  * Utility class for password hashing and salt generation.
+ * This class provides methods to generate a random salt, hash a password
+ * using SHA-256 with the provided salt, and to convert between byte arrays
+ * and hexadecimal strings for secure password storage.
  */
 public class PasswordUtil {
 
     /**
-     * Generates a random salt.
+     * Generates a random salt using SecureRandom.
+     * The salt is 16 bytes long and returned as a hexadecimal string.
      *
      * @return A hexadecimal string representing the salt.
      */
@@ -22,11 +26,14 @@ public class PasswordUtil {
     }
 
     /**
-     * Hashes a password with the provided salt using SHA-256.
+     * Hashes a password using the SHA-256 algorithm with the provided salt.
+     * The password is hashed by first updating the MessageDigest with the salt 
+     * and then digesting the password.
      *
      * @param password The password to hash.
-     * @param salt     The salt to use in hashing.
+     * @param salt     The salt to use in the hashing process.
      * @return The hashed password as a hexadecimal string.
+     *         Returns null if an exception occurs during hashing.
      */
     public static String hashPassword(String password, String salt) {
         try {

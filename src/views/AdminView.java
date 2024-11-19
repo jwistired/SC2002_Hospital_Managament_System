@@ -1,20 +1,22 @@
 package views;
 
-import models.User;
-import models.Appointment;
-import models.InventoryItem;
-
 import java.util.List;
 import java.util.Scanner;
+import models.Appointment;
+import models.InventoryItem;
+import models.User;
 
 /**
  * Class representing the administrator view in the hospital management system.
+ * This class provides methods to display menus and interact with the user
+ * for managing hospital staff, appointments, medication inventory, and doctor schedules.
  */
 public class AdminView {
     private Scanner scanner;
 
     /**
-     * Constructs an AdminView object.
+     * Displays the main administrator menu.
+     * This menu allows the admin to select options to manage staff, appointments, inventory, doctor schedules, or log out.
      */
     public AdminView() {
         scanner = new Scanner(System.in);
@@ -67,10 +69,11 @@ public class AdminView {
         System.out.println("3. Return to Main Menu");
     }
 
-    /**
-     * Displays a list of staff members.
+   /**
+     * Displays a list of hospital staff members.
+     * The staff list includes their user ID, name, and role.
      *
-     * @param staff The list of staff members.
+     * @param staff The list of staff members to display.
      */
     public void displayStaffList(List<User> staff) {
         System.out.println("\n--- Hospital Staff ---");
@@ -87,9 +90,10 @@ public class AdminView {
     }
 
     /**
-     * Displays appointment details.
+     * Displays the details of appointments.
+     * The appointment details include the appointment ID, doctor ID, patient ID, and status.
      *
-     * @param appointments The list of appointments.
+     * @param appointments The list of appointments to display.
      */
     public void displayAppointments(List<Appointment> appointments) {
         System.out.println("\n--- Appointment Details ---");
@@ -156,11 +160,12 @@ public class AdminView {
     }
 
     /**
-     * Displays a doctor's schedule with booked and available timings.
+     * Displays the schedule for a specific doctor.
+     * The schedule shows the date-time, booking status, and patient ID for each time slot.
      *
-     * @param schedule     The list of schedule entries.
-     * @param appointments The list of all appointments.
-     * @param doctorID     The ID of the doctor.
+     * @param schedule     The list of schedule entries for a doctor.
+     * @param appointments The list of all appointments to check against.
+     * @param doctorID     The ID of the doctor whose schedule is being displayed.
      */
     public void displayDoctorSchedule(List<String> schedule, List<Appointment> appointments, String doctorID) {
         System.out.println("\n--- Schedule for Doctor ID: " + doctorID + " ---");

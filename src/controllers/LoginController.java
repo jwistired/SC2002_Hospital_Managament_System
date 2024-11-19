@@ -2,30 +2,31 @@
 
 package controllers;
 
-import views.LoginView;
-import models.User;
-import models.Patient;
-import models.Doctor;
-import models.Pharmacist;
-import models.Administrator;
-import utils.SerializationUtil;
-import utils.PasswordUtil;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+import models.Administrator;
+import models.Doctor;
+import models.Patient;
+import models.Pharmacist;
+import models.User;
+import utils.PasswordUtil;
+import utils.SerializationUtil;
+import views.LoginView;
 
 /**
- * Controller class for handling user login and authentication.
+ * Controller class for handling user login and authentication in the Hospital Management System.
+ * This class is responsible for authenticating users, managing their login flow,
+ * and redirecting them to the appropriate role-specific controller.
  */
 public class LoginController {
     private LoginView view;
     private HashMap<String, User> users;
 
     /**
-     * Constructs a LoginController object.
+     * Constructs a LoginController object that handles the login process.
      *
-     * @param view The login view.
+     * @param view The view object for displaying login-related messages and inputs.
      */
     public LoginController(LoginView view) {
         this.view = view;
@@ -33,7 +34,8 @@ public class LoginController {
     }
 
     /**
-     * Loads users from the serialized file.
+     * Loads users from a serialized file.
+     * If no user data exists, creates a default administrator account.
      */
     private void loadUsers() {
         try {
@@ -54,7 +56,9 @@ public class LoginController {
     }
 
     /**
-     * Authenticates the user based on input credentials.
+     * Authenticates the user based on the input credentials.
+     * If the credentials are valid, redirects the user to their role-specific controller.
+     * If authentication fails, prompts the user to try again.
      */
     public void authenticate() {
         String userID = view.getUserID();
@@ -83,7 +87,8 @@ public class LoginController {
     }
 
     /**
-     * Prompts the user to change their password on first login.
+     * Prompts the user to change their password if it is their first login.
+     * Ensures that the new password and confirm password match before updating the user's password.
      *
      * @param user The user who needs to change their password.
      */
@@ -109,7 +114,7 @@ public class LoginController {
     }
 
     /**
-     * Redirects the authenticated user to their respective controller.
+     * Redirects the authenticated user to their respective controller based on their role.
      *
      * @param user The authenticated user.
      */
@@ -141,7 +146,7 @@ public class LoginController {
     }
 
     /**
-     * Saves the users to the serialized file.
+     * Saves the users to the serialized file to preserve their data.
      */
     private void saveUsers() {
         try {

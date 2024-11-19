@@ -5,13 +5,15 @@ import java.util.List;
 
 /**
  * Class representing a pharmacist in the hospital management system.
+ * This class extends the User class and manages a list of prescriptions assigned to the pharmacist.
  */
 public class Pharmacist extends User {
     private static final long serialVersionUID = 1L;
     private List<Prescription> prescriptions;
 
     /**
-     * Constructs a Pharmacist object.
+     * Constructs a Pharmacist object with the specified user details.
+     * Initializes an empty list of prescriptions.
      *
      * @param userID   The pharmacist's ID.
      * @param name     The pharmacist's name.
@@ -22,8 +24,11 @@ public class Pharmacist extends User {
         this.prescriptions = new ArrayList<>();
     }
 
-    // Getters and Setters
-
+    /**
+     * Gets the list of prescriptions assigned to the pharmacist.
+     *
+     * @return A list of prescriptions.
+     */
     public List<Prescription> getPrescriptions() {
         return prescriptions;
     }

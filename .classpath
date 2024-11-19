@@ -5,6 +5,7 @@
     <classpathentry kind="src" path="SC2002_Hospital_Management_System/controllers"/>
     <classpathentry kind="src" path="SC2002_Hospital_Management_System/views"/>
     <classpathentry kind="src" path="SC2002_Hospital_Management_System/models"/>
+    <classpathentry kind="src" path="SC2002_Hospital_Management_System/utils"/>   
     <classpathentry kind="lib" path="jdeserialize-1.2.jar"/>
     <classpathentry kind="output" path="bin"/>
 </classpath>

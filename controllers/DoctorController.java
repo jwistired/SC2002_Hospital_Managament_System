@@ -462,7 +462,6 @@ public class DoctorController {
     /**
      * Loads patients from the serialized file.
      */
-    @SuppressWarnings("unchecked")
     private void loadPatients() {
         try {
             patients = new HashMap<>();

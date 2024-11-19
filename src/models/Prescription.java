@@ -71,4 +71,9 @@ public class Prescription implements Serializable {
     public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
+
+    public String toString() {
+        return "Medication: " + medicationName + ", Quantity: " + quantity;
+    }
+    
 }

@@ -12,6 +12,8 @@ import views.PharmacistView;
 
 /**
  * Controller class for handling pharmacist-related operations.
+ * This class manages the interaction between the pharmacist, 
+ * their appointments, inventory, and prescriptions.
  */
 public class PharmacistController {
     private Pharmacist model;
@@ -22,8 +24,8 @@ public class PharmacistController {
     /**
      * Constructs a PharmacistController object.
      *
-     * @param model The pharmacist model.
-     * @param view  The pharmacist view.
+     * @param model The pharmacist model containing pharmacist-specific data.
+     * @param view  The pharmacist view for displaying information and user input.
      */
     public PharmacistController(Pharmacist model, PharmacistView view) {
         this.model = model;
@@ -34,6 +36,7 @@ public class PharmacistController {
 
     /**
      * Starts the pharmacist menu loop.
+     * Displays the menu options and handles user input for various pharmacist operations.
      */
     public void start() {
         int choice;

@@ -166,10 +166,10 @@ public class PatientView {
     public void displayPastAppointmentOutcomes(List<AppointmentOutcome> outcomes) {
         System.out.println("\nPast Appointment Outcomes:");
         for (AppointmentOutcome outcome : outcomes) {
-            System.out.println("Date: " + outcome.getDateOfAppointment());
+            System.out.println("Note: " + outcome.getConsultationNotes());
+            //System.out.println("Date: " + outcome.getDateOfAppointment());
             System.out.println("Service: " + outcome.getTypeOfService());
             System.out.println("Prescription: " + outcome.getPrescriptions());
-            System.out.println("Note: " + outcome.getConsultationNotes());
             System.out.println();
         }
     }

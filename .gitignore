@@ -53,3 +53,6 @@ src/src/database/Schedule_doc1.ser
 *.ser
 src/database/appointments.ser
 src/database/users.ser
+src/database/appointments.ser
+src/database/Schedule_doc1.ser
+src/database/users.ser

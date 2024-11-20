@@ -322,8 +322,11 @@ public class DoctorController {
                     for (int i = 0; i < schedule.size(); i++) {
                         if (schedule.get(i).startsWith(dateTime.format(formatter))) {
                             index = i;
+                            view.displayMessage("Index: " + index + "Found");
                             break;
                         }
+                        else{
+                            view.displayMessage("Index: " + index + "Not Found");}
                     }
 
                      // Replace the existing entry if found, otherwise add the new entry
@@ -337,6 +340,7 @@ public class DoctorController {
                 } else {
                     appt.setStatus("declined");
                 }
+                saveSchedule();
                 saveAppointments();
                 view.displayMessage("Appointment " + (decision.equalsIgnoreCase("A") ? "accepted." : "declined."));
                 break;

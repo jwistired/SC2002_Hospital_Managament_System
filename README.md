@@ -49,10 +49,14 @@ Use the following:
 ```bash
 java -jar jdeserialize-1.2.jar src/database/users.ser
 ```
-Javadoc file location:
+## Folder/File Structure:
 
-	• src\doc
- 
- .class file location:
- 
-	• bin
+- 📁[Report](/Report): Holds the group report
+- 📁[controllers](/controllers): Contains the controller classes
+- 📁[doc](/doc): Contains JAVADOC
+- 📁[main](/main): Contains SystemIntializer and HMSapplication
+- 📁[models](/models): Contains the model files
+- 📁[src/database](/src/database): Contains .ser files for database
+- 📁[utils](/utils): Contains configuration, serialization and password utility functions
+- 📁[views](/views): Contains all the views for different users
+

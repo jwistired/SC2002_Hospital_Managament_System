@@ -302,7 +302,9 @@ public class DoctorController {
         
         //Display Apt with Patient Name and Date
         for (Appointment appt : pendingAppointments) {
-            view.displayMessage("Appointment ID: " + appt.getAppointmentID() + " with " + patients.get(appt.getPatientID()).getName() + " on " + appt.getDateTime());
+            if (appt.getAppointmentID().equals(appointmentID)) {
+            view.displayMessage("Appointment ID: " + appt.getAppointmentID() + " with " + patients.get(appt.getPatientID()).getName() + " on " + appt.getDateTime().format(formatter));
+            }
         }
 
         //Get appointment ID and decision from user

@@ -54,7 +54,7 @@ java -jar jdeserialize-1.2.jar src/database/users.ser
 
 - 📁[Report](/Report): Holds the group report
 - 📁[controllers](/controllers): Contains the controller classes
-- 📁[doc](/doc): Contains JAVADOC
+- 📁[docs](/docs): Contains JAVADOC
 - 📁[main](/main): Contains SystemIntializer and HMSapplication
 - 📁[models](/models): Contains the model files
 - 📁[src/database](/src/database): Contains .ser files for database

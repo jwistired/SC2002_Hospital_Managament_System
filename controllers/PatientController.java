@@ -482,6 +482,7 @@ public class PatientController {
         
         // Remove slots that contain "Unavailable" at the end of the string
         schedule.removeIf(slot -> slot.trim().endsWith("Unavailable"));
+        schedule.removeIf(slot -> slot.trim().contains("Confirmed"));
         
     } catch (Exception e) {
         System.out.println("Error loading schedule: " + e.getMessage());

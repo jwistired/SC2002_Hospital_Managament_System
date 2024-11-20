@@ -75,7 +75,6 @@ public class PharmacistController {
             if (outcome != null) {
                 view.displayMessage("Patient ID: " + appt.getPatientID());
                 view.displayMessage("Appointment ID: " + appt.getAppointmentID());
-                view.displayMessage("Date: " + outcome.getDateOfAppointment());
                 view.displayMessage("Service: " + outcome.getTypeOfService());
                 view.displayMessage("Consultation Notes: " + outcome.getConsultationNotes());
                 for (Prescription presc : outcome.getPrescriptions()) {

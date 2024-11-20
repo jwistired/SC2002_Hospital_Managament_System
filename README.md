@@ -1,4 +1,14 @@
+# Hospital Management System
 
+![Banner](Banner.png)
+
+
+## Table of Content
+- [Compile Instructions](#compile-instructions)
+- [Testing the Application](#testing-the-application)
+- [Printing Information](#printing-information)
+
+## Compile Instructions
 For Windows:
 ```
 ./compile
@@ -14,9 +24,9 @@ Then to run:
 ./compile.sh
 ```
 
-Testing the Application
+## Testing the Application
 
-Login Credentials
+### Login Credentials
 
 Upon first run, use the following default login credentials:
 
@@ -33,7 +43,9 @@ Upon first run, use the following default login credentials:
 	•	User ID: patient1
 	•	Password: password (change upon first login)
 
-Print information inside database by
+### Printing information
+
+Use the following:
 ```bash
 java -jar jdeserialize-1.2.jar src/database/users.ser
 ```

@@ -7,6 +7,7 @@
 - [Compile Instructions](#compile-instructions)
 - [Testing the Application](#testing-the-application)
 - [Printing Information](#printing-information)
+- [Folder/File Structure](#folderfile-structure)
 
 ## Compile Instructions
 For Windows:

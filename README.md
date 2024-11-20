@@ -52,7 +52,7 @@ java -jar jdeserialize-1.2.jar src/database/users.ser
 ```
 ## Folder/File Structure:
 
-- 📁[Report](/Report): Holds the group report
+- 📁[Report](/Report): Holds the group report - [Class Diagram](/Report/Class&#32;Diagram)
 - 📁[controllers](/controllers): Contains the controller classes
 - 📁[docs](/docs): Contains JAVADOC
 - 📁[main](/main): Contains SystemIntializer and HMSapplication

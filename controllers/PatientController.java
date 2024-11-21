@@ -242,7 +242,7 @@ public class PatientController {
         
         List<Appointment> patientAppointments = new ArrayList<>();
         for (Appointment appt : appointments) {
-            if (appt.getPatientID().equals(model.getUserID())) {
+            if (appt.getPatientID().equals(model.getUserID()) && !appt.getStatus().equals("completed")) {
                 patientAppointments.add(appt);
             }
         }
